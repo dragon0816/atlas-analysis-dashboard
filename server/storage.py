@@ -30,7 +30,8 @@ def default_data_dir() -> Path:
     if override:
         return Path(override).expanduser().absolute()
     if WINDOWS:
-        base = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
+        local = os.environ.get("LOCALAPPDATA")
+        base = Path(local) if local else Path.home() / "AppData" / "Local"
         return base / "AtlasAnalysisDashboard" / "dashboards"
     base = os.environ.get("XDG_DATA_HOME")
     if base and not Path(base).is_absolute():

@@ -18,6 +18,7 @@ from urllib.parse import quote
 from server.http import DashboardHTTPServer
 from server.schema import InvalidDocument, MAX_BYTES, decode_document, encode_document, validate_document
 from server.storage import DashboardStore, StoreError, default_data_dir, validate_name
+from server.windows_acl import ADMINISTRATORS, OWNER_RIGHTS, SYSTEM, private_principals
 
 
 def dashboard(title="分析範例"):
@@ -46,6 +47,24 @@ def race_update(directory, etag, start, results, title):
 
 
 class SchemaTests(unittest.TestCase):
+    def test_windows_localappdata_does_not_require_a_home_variable(self):
+        with patch("server.storage.WINDOWS", True), patch.dict(os.environ, {"LOCALAPPDATA": "/private/local"}, clear=True), patch("server.storage.Path.home", side_effect=RuntimeError("No home configured")):
+            self.assertEqual(default_data_dir(), Path("/private/local/AtlasAnalysisDashboard/dashboards"))
+
+    def test_windows_owner_rights_is_scoped_to_a_trusted_owner(self):
+        user = "S-1-5-21-100-200-300-1001"
+        foreign = "S-1-5-21-100-200-300-1002"
+        for owner in (user, ADMINISTRATORS):
+            allowed = private_principals(owner, user)
+            self.assertEqual(allowed, {user, SYSTEM, ADMINISTRATORS, OWNER_RIGHTS})
+            for broad in ("S-1-1-0", "S-1-5-11", "S-1-5-32-545", "S-1-3-0", foreign):
+                self.assertNotIn(broad, allowed)
+        for owner in (foreign, "S-1-1-0", OWNER_RIGHTS, ""):
+            with self.assertRaises(PermissionError):
+                private_principals(owner, user)
+        with self.assertRaises(PermissionError):
+            private_principals(ADMINISTRATORS, "")
+
     def test_shared_frontend_contract(self):
         path = Path(__file__).parent / "fixtures" / "dashboard-contract.json"
         fixtures = json.loads(path.read_text(encoding="utf-8"))

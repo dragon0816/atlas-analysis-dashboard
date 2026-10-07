@@ -15,6 +15,8 @@ from pathlib import Path
 import sys
 import time
 
+from .windows_acl import private_principals
+
 kernel = ctypes.WinDLL("kernel32", use_last_error=True)
 security = ctypes.WinDLL("advapi32", use_last_error=True)
 INVALID_HANDLE = ctypes.c_void_p(-1).value
@@ -121,9 +123,9 @@ def check_private_handle(handle):
         raise ctypes.WinError(result)
     try:
         user = _user_sid()
-        if not owner.value or _sid_text(owner) not in {user, "S-1-5-32-544"} or not dacl.value:
+        if not owner.value or not dacl.value:
             raise PermissionError("Private storage must be owned by the current Windows user with a restrictive ACL")
-        permitted = {user, "S-1-5-18", "S-1-5-32-544"}
+        permitted = private_principals(_sid_text(owner), user)
         acl = ctypes.cast(dacl, ctypes.POINTER(ACL)).contents
         for index in range(acl.count):
             ace = ctypes.c_void_p()

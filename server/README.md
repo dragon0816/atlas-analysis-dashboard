@@ -27,7 +27,7 @@ python -m server --port 8127
 python -m server --data-dir /absolute/private/dashboard-data --port 8127
 ```
 
-Linux／macOS 由服務建立的目錄使用 0700，文件與鎖檔使用 0600。既有儲存目錄必須屬於目前使用者，且群組／其他使用者沒有存取權限。Windows 會驗證目錄與文件 ACL，僅允許目前使用者、SYSTEM 與本機 Administrators 存取，且拒絕無法確認安全的 ACL；不會修改既有 ACL。Windows 的資料目錄請使用本機磁碟，不支援 UNC／網路磁碟路徑。
+Linux／macOS 由服務建立的目錄使用 0700，文件與鎖檔使用 0600。既有儲存目錄必須屬於目前使用者，且群組／其他使用者沒有存取權限。Windows 會驗證目錄與文件 ACL，僅允許目前使用者、SYSTEM 與本機 Administrators 存取；Python 私有目錄的 OWNER RIGHTS 僅在實際 owner 已通過檢查後接受，且拒絕無法確認安全的 ACL；不會修改既有 ACL。Windows 的資料目錄請使用本機磁碟，不支援 UNC／網路磁碟路徑。
 
 儲存路徑的每一層都不能是 symlink；Windows 也拒絕 junction 與其他 reparse point。檔案不能是 hard link 或非一般檔案。Windows 以不允許刪除共享的 handles 固定已驗證的祖先目錄，並用 OPEN_REPARSE_POINT 開啟檔案。請使用實際路徑，且勿把私人儀表板存入 Git checkout。
 
