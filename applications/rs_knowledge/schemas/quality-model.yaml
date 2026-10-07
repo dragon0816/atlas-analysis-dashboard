@@ -1,0 +1,43 @@
+preprocessing:
+- Drop
+- Raw
+- Wiki
+harness:
+- Intent
+- Planning
+- Retrieval
+- Reasoning
+- Execution
+- Validation
+benchmark:
+  target_questions: 1100
+  market_product: 1000
+  product_technical: 100
+  status: Not integrated; all bundled data is synthetic
+gap_taxonomy:
+- SOURCE_GAP
+- PREPROCESS_PROGRAM_GAP
+- INGESTION_SKILL_GAP
+- METADATA_GAP
+- RELATION_GAP
+- RETRIEVAL_GAP
+- REASONING_GAP
+- EXECUTION_GAP
+- VALIDATION_GAP
+- CONFLICT
+- STALE_DATA
+- SYSTEM_ERROR
+graph_path:
+- Market
+- Application
+- Technology
+- Requirement
+- Measurement
+- Product
+- Competitor
+graph_states:
+- covered
+- weak
+- missing/inferred
+- conflict/disputed
+- stale

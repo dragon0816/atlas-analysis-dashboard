@@ -1,0 +1,357 @@
+schemaVersion: 2
+id: rs-knowledge-overview
+presetId: rs-knowledge-overview
+title: RS Knowledge Observatory
+applicationId: rs_knowledge
+description: Explore coverage, relations and the layer responsible for every gap.
+  Synthetic data demonstrates the platform; real 1,100-question integration follows
+  separately.
+variables:
+- id: market
+  label: Market
+  options:
+  - AI
+  - Automotive
+  - Connectivity
+  - Aerospace
+  - Industrial
+- id: product
+  label: Product
+  options:
+  - Tester
+  - Spectrum Analyzer
+  - Signal Generator
+  - VNA
+- id: technology
+  label: Technology
+  options:
+  - Wi-Fi 8
+  - 5G NTN
+  - Bluetooth 6
+  - UWB
+  - 6G
+- id: benchmark_version
+  label: Benchmark
+  options:
+  - demo-v2
+- id: run_id
+  label: Run
+  options:
+  - demo-run-1
+  - demo-run-2
+  - demo-run-3
+  - demo-run-4
+- id: owner
+  label: Owner
+  options:
+  - Knowledge Engineering
+  - Content Operations
+  - Validation Team
+- id: time_range
+  label: Run dates (UTC)
+  type: time_range
+panels:
+- id: coverage
+  title: Evidence coverage
+  type: stat
+  datasource:
+    id: knowledge.benchmark_results
+  transform:
+  - op: ref
+    id: coverage_summary
+  mapping:
+    value: coverage
+  display: {}
+  layout:
+    x: 0
+    y: 0
+    w: 3
+    h: 3
+    minW: 2
+    minH: 3
+- id: questions
+  title: Benchmark samples · demo
+  type: stat
+  datasource:
+    id: knowledge.benchmark_results
+  transform:
+  - op: aggregate
+    by: []
+    metrics:
+    - field: question_id
+      function: count
+      as: count
+  mapping:
+    value: count
+  display: {}
+  layout:
+    x: 3
+    y: 0
+    w: 3
+    h: 3
+    minW: 2
+    minH: 3
+- id: gaps
+  title: Open knowledge gaps
+  type: stat
+  datasource:
+    id: knowledge.gaps
+  transform:
+  - op: aggregate
+    by: []
+    metrics:
+    - field: gap_id
+      function: count
+      as: count
+  mapping:
+    value: count
+  display: {}
+  layout:
+    x: 6
+    y: 0
+    w: 3
+    h: 3
+    minW: 2
+    minH: 3
+- id: conflict-count
+  title: Conflicting evidence
+  type: stat
+  datasource:
+    id: knowledge.conflicts
+  transform:
+  - op: aggregate
+    by: []
+    metrics:
+    - field: conflict
+      function: count
+      as: count
+  mapping:
+    value: count
+  display: {}
+  layout:
+    x: 9
+    y: 0
+    w: 3
+    h: 3
+    minW: 2
+    minH: 3
+- id: relations
+  title: Data relation graph
+  type: network
+  datasource:
+    id: knowledge.graph
+  transform: []
+  mapping:
+    nodeId: id
+    nodeLabel: label
+    nodeGroup: group
+    nodeType: type
+    nodeCommunity: community
+    nodeSize: size
+    nodeColor: group
+    edgeSource: source
+    edgeTarget: target
+    edgeType: type
+    edgeWeight: weight
+    edgeState: state
+  display:
+    maxNodes: 250
+    maxEdges: 500
+    showLabels: true
+  layout:
+    x: 0
+    y: 3
+    w: 8
+    h: 9
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+      action: drill_down
+      target: Knowledge relation details
+      values:
+        market: $market
+        product: $product
+- id: conflicts
+  title: Conflict data
+  type: table
+  datasource:
+    id: knowledge.conflicts
+  transform: []
+  mapping: {}
+  display: {}
+  layout:
+    x: 8
+    y: 3
+    w: 4
+    h: 6
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+      action: open_details
+      target: Conflict resolution
+      values:
+        market: $market
+        product: $product
+- id: feedback
+  title: Unexpected feedback
+  type: table
+  datasource:
+    id: knowledge.feedback
+  transform: []
+  mapping: {}
+  display: {}
+  layout:
+    x: 8
+    y: 9
+    w: 4
+    h: 6
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+      action: open_details
+      target: Feedback triage
+      values:
+        market: $market
+        product: $product
+- id: matrix
+  title: Market × Product · evidence coverage
+  type: heatmap
+  datasource:
+    id: knowledge.benchmark_results
+  transform:
+  - op: ref
+    id: coverage_matrix
+  mapping:
+    x: market
+    y: product
+    value: coverage
+  display:
+    color_scale: blue
+    show_values: true
+    min: 0
+    max: 100
+    threshold: 50
+    aggregate: mean
+  layout:
+    x: 0
+    y: 12
+    w: 8
+    h: 7
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+    - action: set_filter
+      values:
+        market: $x
+        product: $y
+    - action: drill_down
+      target: Benchmark → Evidence → Wiki → Source → Gap → Owner
+      values:
+        market: $x
+        product: $y
+- id: runs
+  title: Benchmark runs
+  type: table
+  datasource:
+    id: knowledge.benchmark_runs
+  transform: []
+  mapping: {}
+  display: {}
+  layout:
+    x: 8
+    y: 15
+    w: 4
+    h: 6
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+      action: drill_down
+      target: Benchmark run details
+      values:
+        run_id: $run_id
+- id: pipeline
+  title: Preprocessing + harness coverage
+  type: bar
+  datasource:
+    id: knowledge.pipeline_health
+  transform:
+  - op: ref
+    id: pipeline_coverage
+  mapping:
+    category: stage
+    value: coverage
+  display: {}
+  layout:
+    x: 0
+    y: 19
+    w: 8
+    h: 7
+    minW: 2
+    minH: 3
+- id: gap-owners
+  title: Gaps · layer · owner / next action
+  type: table
+  datasource:
+    id: knowledge.gaps
+  transform: []
+  mapping: {}
+  display: {}
+  layout:
+    x: 8
+    y: 21
+    w: 4
+    h: 7
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+      action: open_details
+      target: Gap responsibility
+      values:
+        market: $market
+        product: $product
+- id: evidence
+  title: Questions, evidence and source traceability
+  type: table
+  datasource:
+    id: knowledge.benchmark_results
+  transform: []
+  mapping: {}
+  display: {}
+  layout:
+    x: 0
+    y: 26
+    w: 8
+    h: 7
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+    - action: highlight
+      values:
+        path: $path
+    - action: drill_down
+      target: Evidence trace
+      values:
+        market: $market
+        product: $product
+- id: source-status
+  title: Source freshness
+  type: table
+  datasource:
+    id: knowledge.sources
+  transform: []
+  mapping: {}
+  display: {}
+  layout:
+    x: 8
+    y: 28
+    w: 4
+    h: 5
+    minW: 2
+    minH: 3

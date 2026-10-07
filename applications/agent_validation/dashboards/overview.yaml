@@ -1,0 +1,139 @@
+schemaVersion: 2
+id: agent-validation-overview
+presetId: agent-validation-overview
+title: Agent Validation Lab
+applicationId: agent_validation
+description: A separate application using JSON, CSV, joins and the same Core panels.
+  All data is synthetic.
+variables:
+- id: suite
+  label: Suite
+  options:
+  - Planning
+  - Tools
+  - Grounding
+- id: environment
+  label: Environment
+  options:
+  - staging
+  - local
+panels:
+- id: latency
+  title: Latency by suite
+  type: bar
+  datasource:
+    id: validation.runs
+  transform:
+  - op: ref
+    id: latency_by_suite
+  mapping:
+    category: suite
+    value: latency_ms
+  display: {}
+  layout:
+    x: 0
+    y: 0
+    w: 6
+    h: 7
+    minW: 2
+    minH: 3
+  interaction:
+    on_click:
+      action: set_filter
+      values:
+        suite: $category
+- id: trend
+  title: Score over time
+  type: line
+  datasource:
+    id: validation.runs
+  transform: []
+  mapping:
+    x: started
+    y: score
+  display: {}
+  layout:
+    x: 6
+    y: 0
+    w: 6
+    h: 7
+    minW: 2
+    minH: 3
+- id: scatter
+  title: Latency vs quality
+  type: scatter
+  datasource:
+    id: validation.runs
+  transform: []
+  mapping:
+    x: latency_ms
+    y: score
+  display: {}
+  layout:
+    x: 0
+    y: 7
+    w: 6
+    h: 7
+    minW: 2
+    minH: 3
+- id: joined
+  title: Runs joined with CSV budgets
+  type: table
+  datasource:
+    id: validation.runs
+  transform:
+  - op: ref
+    id: with_budgets
+  mapping: {}
+  display: {}
+  layout:
+    x: 6
+    y: 7
+    w: 6
+    h: 7
+    minW: 2
+    minH: 3
+- id: timeline
+  title: Validation event timeline
+  type: timeline
+  datasource:
+    id: validation.runs
+  transform: []
+  mapping:
+    time: started
+    label: run
+    detail: suite
+    status: passed
+  display: {}
+  layout:
+    x: 0
+    y: 14
+    w: 6
+    h: 7
+    minW: 2
+    minH: 3
+- id: notes
+  title: About this application
+  type: text
+  datasource:
+    id: validation.runs
+  transform: []
+  mapping: {}
+  display:
+    text: '## Domain-neutral Core
+
+      This preset uses validation runs and CSV budgets.
+
+
+      - Source → Transform → Dataset → Panel
+
+      - Same layout editor and persistence
+
+      - No knowledge-specific code in Core'
+  layout:
+    x: 6
+    y: 14
+    w: 6
+    h: 7
+    minW: 2
+    minH: 3

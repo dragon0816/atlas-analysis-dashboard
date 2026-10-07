@@ -1,0 +1,24 @@
+coverage_summary:
+- op: aggregate
+  by: []
+  metrics:
+  - field: evidence_coverage
+    function: mean
+    as: coverage
+coverage_matrix:
+- op: aggregate
+  by:
+  - market
+  - product
+  metrics:
+  - field: evidence_coverage
+    function: mean
+    as: coverage
+pipeline_coverage:
+- op: aggregate
+  by:
+  - stage
+  metrics:
+  - field: coverage
+    function: mean
+    as: coverage

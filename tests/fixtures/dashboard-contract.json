@@ -1,0 +1,919 @@
+[
+  {
+    "name": "table",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "line",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "line",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "mask",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "mask",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "bar",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "bar",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "box",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "box",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "histogram",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "histogram",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "stat",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "stat",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "gauge",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "gauge",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "heatmap",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "heatmap",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "network",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "network",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "area",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "area",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "pie",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "pie",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "donut",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "donut",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "scatter",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "scatter",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "text",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "text",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "status",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "status",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "progress",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "progress",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "timeline",
+    "valid": true,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "timeline",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "old-schema",
+    "valid": false,
+    "document": {
+      "schemaVersion": 1,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "blank-id",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": " ",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "unknown-panel",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "unknown",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "coerced-panel",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": [
+            "table"
+          ],
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "zero-width",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "boolean-width",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": true,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "unknown-transform",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [
+            {
+              "op": "eval"
+            }
+          ],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "unsupported-source-shape",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows",
+            "url": "https://example.test"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "invalid-mapping",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {
+            "x": 4
+          },
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "long-mapping",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {
+            "x": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          },
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "invalid-action",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          },
+          "interaction": {
+            "on_click": {
+              "action": "execute"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "negative-refresh",
+    "valid": false,
+    "document": {
+      "schemaVersion": 2,
+      "id": "independent-dashboard",
+      "title": "Contract fixture",
+      "applicationId": "sample",
+      "variables": [],
+      "panels": [
+        {
+          "id": "p",
+          "title": "Values",
+          "type": "table",
+          "datasource": {
+            "id": "sample.rows"
+          },
+          "transform": [],
+          "mapping": {},
+          "display": {},
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 6,
+            "h": 4
+          },
+          "refresh": -1
+        }
+      ]
+    }
+  }
+]

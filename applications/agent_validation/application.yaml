@@ -1,0 +1,8 @@
+id: agent_validation
+name: Agent Validation
+description: Compare agent quality, latency and execution budgets.
+demo: true
+datasources: datasources.yaml
+transforms: transforms.yaml
+dashboards:
+- dashboards/overview.yaml

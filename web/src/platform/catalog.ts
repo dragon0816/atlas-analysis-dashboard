@@ -1,0 +1,21 @@
+import type { PlatformPanelKind } from "./types";
+export const PANEL_LIBRARY: { type: PlatformPanelKind; label: string; icon: string; roles: string[] }[] = [
+  { type: "stat", label: "KPI / Stat", icon: "#", roles: ["value"] },
+  { type: "table", label: "Table", icon: "▤", roles: [] },
+  { type: "line", label: "Line", icon: "↗", roles: ["x", "y", "series"] },
+  { type: "bar", label: "Bar", icon: "▥", roles: ["category", "value", "series"] },
+  { type: "heatmap", label: "Heatmap", icon: "▦", roles: ["x", "y", "value"] },
+  { type: "network", label: "Network Graph", icon: "◉", roles: ["nodeId", "nodeLabel", "nodeGroup", "nodeSize", "nodeColor", "nodeType", "nodeCommunity", "edgeSource", "edgeTarget", "edgeType", "edgeWeight", "edgeState"] },
+  { type: "area", label: "Area", icon: "◩", roles: ["x", "y", "series"] },
+  { type: "pie", label: "Pie", icon: "◕", roles: ["category", "value"] },
+  { type: "donut", label: "Donut", icon: "◎", roles: ["category", "value"] },
+  { type: "scatter", label: "Scatter", icon: "⁙", roles: ["x", "y", "series"] },
+  { type: "histogram", label: "Histogram", icon: "▥", roles: ["value"] },
+  { type: "box", label: "Box Plot", icon: "⊞", roles: ["category", "value", "q1", "median", "q3", "low", "high"] },
+  { type: "gauge", label: "Gauge", icon: "◔", roles: ["value", "min", "max"] },
+  { type: "mask", label: "Limit Mask", icon: "≋", roles: ["x", "y", "lower", "upper"] },
+  { type: "text", label: "Text / Markdown", icon: "T", roles: [] },
+  { type: "status", label: "Status", icon: "●", roles: ["label", "value"] },
+  { type: "progress", label: "Progress", icon: "▬", roles: ["label", "value"] },
+  { type: "timeline", label: "Timeline / Events", icon: "☷", roles: ["time", "label", "detail", "status"] },
+];

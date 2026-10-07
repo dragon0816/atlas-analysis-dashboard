@@ -1,0 +1,12 @@
+validation.runs:
+  type: json
+  format: table
+  label: Validation runs
+  path: data/runs.json
+  bindings:
+    suite: suite
+    environment: environment
+validation.budgets:
+  type: csv
+  label: Suite latency budgets
+  path: data/budgets.csv

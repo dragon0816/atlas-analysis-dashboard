@@ -1,0 +1,15 @@
+# Generated dependencies, bundles and local state
+node_modules/
+web/dist/
+__pycache__/
+*.py[cod]
+.venv/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.coverage
+.pytest_cache/
+.local-data/

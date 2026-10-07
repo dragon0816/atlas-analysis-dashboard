@@ -1,0 +1,218 @@
+[
+  {
+    "run": "validation-01",
+    "suite": "Planning",
+    "environment": "staging",
+    "latency_ms": 120,
+    "score": 0.6,
+    "passed": false,
+    "started": "2026-10-07T08:00:00Z"
+  },
+  {
+    "run": "validation-02",
+    "suite": "Tools",
+    "environment": "local",
+    "latency_ms": 157,
+    "score": 0.73,
+    "passed": true,
+    "started": "2026-10-07T08:01:00Z"
+  },
+  {
+    "run": "validation-03",
+    "suite": "Grounding",
+    "environment": "staging",
+    "latency_ms": 194,
+    "score": 0.86,
+    "passed": true,
+    "started": "2026-10-07T08:02:00Z"
+  },
+  {
+    "run": "validation-04",
+    "suite": "Planning",
+    "environment": "local",
+    "latency_ms": 231,
+    "score": 0.61,
+    "passed": true,
+    "started": "2026-10-07T08:03:00Z"
+  },
+  {
+    "run": "validation-05",
+    "suite": "Tools",
+    "environment": "staging",
+    "latency_ms": 268,
+    "score": 0.74,
+    "passed": true,
+    "started": "2026-10-07T08:04:00Z"
+  },
+  {
+    "run": "validation-06",
+    "suite": "Grounding",
+    "environment": "local",
+    "latency_ms": 305,
+    "score": 0.87,
+    "passed": false,
+    "started": "2026-10-07T08:05:00Z"
+  },
+  {
+    "run": "validation-07",
+    "suite": "Planning",
+    "environment": "staging",
+    "latency_ms": 342,
+    "score": 0.62,
+    "passed": true,
+    "started": "2026-10-07T08:06:00Z"
+  },
+  {
+    "run": "validation-08",
+    "suite": "Tools",
+    "environment": "local",
+    "latency_ms": 379,
+    "score": 0.75,
+    "passed": true,
+    "started": "2026-10-07T08:07:00Z"
+  },
+  {
+    "run": "validation-09",
+    "suite": "Grounding",
+    "environment": "staging",
+    "latency_ms": 416,
+    "score": 0.88,
+    "passed": true,
+    "started": "2026-10-07T08:08:00Z"
+  },
+  {
+    "run": "validation-10",
+    "suite": "Planning",
+    "environment": "local",
+    "latency_ms": 453,
+    "score": 0.63,
+    "passed": true,
+    "started": "2026-10-07T08:09:00Z"
+  },
+  {
+    "run": "validation-11",
+    "suite": "Tools",
+    "environment": "staging",
+    "latency_ms": 490,
+    "score": 0.76,
+    "passed": false,
+    "started": "2026-10-07T08:10:00Z"
+  },
+  {
+    "run": "validation-12",
+    "suite": "Grounding",
+    "environment": "local",
+    "latency_ms": 127,
+    "score": 0.89,
+    "passed": true,
+    "started": "2026-10-07T08:11:00Z"
+  },
+  {
+    "run": "validation-13",
+    "suite": "Planning",
+    "environment": "staging",
+    "latency_ms": 164,
+    "score": 0.64,
+    "passed": true,
+    "started": "2026-10-07T08:12:00Z"
+  },
+  {
+    "run": "validation-14",
+    "suite": "Tools",
+    "environment": "local",
+    "latency_ms": 201,
+    "score": 0.77,
+    "passed": true,
+    "started": "2026-10-07T08:13:00Z"
+  },
+  {
+    "run": "validation-15",
+    "suite": "Grounding",
+    "environment": "staging",
+    "latency_ms": 238,
+    "score": 0.9,
+    "passed": true,
+    "started": "2026-10-07T08:14:00Z"
+  },
+  {
+    "run": "validation-16",
+    "suite": "Planning",
+    "environment": "local",
+    "latency_ms": 275,
+    "score": 0.65,
+    "passed": false,
+    "started": "2026-10-07T08:15:00Z"
+  },
+  {
+    "run": "validation-17",
+    "suite": "Tools",
+    "environment": "staging",
+    "latency_ms": 312,
+    "score": 0.78,
+    "passed": true,
+    "started": "2026-10-07T08:16:00Z"
+  },
+  {
+    "run": "validation-18",
+    "suite": "Grounding",
+    "environment": "local",
+    "latency_ms": 349,
+    "score": 0.91,
+    "passed": true,
+    "started": "2026-10-07T08:17:00Z"
+  },
+  {
+    "run": "validation-19",
+    "suite": "Planning",
+    "environment": "staging",
+    "latency_ms": 386,
+    "score": 0.66,
+    "passed": true,
+    "started": "2026-10-07T08:18:00Z"
+  },
+  {
+    "run": "validation-20",
+    "suite": "Tools",
+    "environment": "local",
+    "latency_ms": 423,
+    "score": 0.79,
+    "passed": true,
+    "started": "2026-10-07T08:19:00Z"
+  },
+  {
+    "run": "validation-21",
+    "suite": "Grounding",
+    "environment": "staging",
+    "latency_ms": 460,
+    "score": 0.92,
+    "passed": false,
+    "started": "2026-10-07T08:20:00Z"
+  },
+  {
+    "run": "validation-22",
+    "suite": "Planning",
+    "environment": "local",
+    "latency_ms": 497,
+    "score": 0.67,
+    "passed": true,
+    "started": "2026-10-07T08:21:00Z"
+  },
+  {
+    "run": "validation-23",
+    "suite": "Tools",
+    "environment": "staging",
+    "latency_ms": 134,
+    "score": 0.8,
+    "passed": true,
+    "started": "2026-10-07T08:22:00Z"
+  },
+  {
+    "run": "validation-24",
+    "suite": "Grounding",
+    "environment": "local",
+    "latency_ms": 171,
+    "score": 0.93,
+    "passed": true,
+    "started": "2026-10-07T08:23:00Z"
+  }
+]

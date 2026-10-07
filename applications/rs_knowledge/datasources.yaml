@@ -1,0 +1,97 @@
+knowledge.pipeline_health:
+  type: json
+  label: Pipeline Health
+  format: table
+  path: data/pipeline_health.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+knowledge.graph:
+  type: json
+  label: Graph
+  format: graph
+  path: data/graph.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+knowledge.benchmark_runs:
+  type: json
+  label: Benchmark Runs
+  format: table
+  path: data/benchmark_runs.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+    started: time_range
+knowledge.benchmark_results:
+  type: json
+  label: Benchmark Results
+  format: table
+  path: data/benchmark_results.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+knowledge.conflicts:
+  type: json
+  label: Conflicts
+  format: table
+  path: data/conflicts.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+knowledge.feedback:
+  type: json
+  label: Feedback
+  format: table
+  path: data/feedback.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+knowledge.gaps:
+  type: json
+  label: Gaps
+  format: table
+  path: data/gaps.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner
+knowledge.sources:
+  type: json
+  label: Sources
+  format: table
+  path: data/sources.json
+  bindings:
+    market: market
+    product: product
+    technology: technology
+    benchmark_version: benchmark_version
+    run_id: run_id
+    owner: owner

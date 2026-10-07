@@ -1,0 +1,9 @@
+id: rs_knowledge
+name: RS Knowledge
+description: Configurable knowledge quality and evidence coverage workspace.
+demo: true
+datasources: datasources.yaml
+transforms: transforms.yaml
+dashboards:
+- dashboards/overview.yaml
+default: true

@@ -1,0 +1,25 @@
+latency_by_suite:
+- op: aggregate
+  by:
+  - suite
+  metrics:
+  - field: latency_ms
+    function: mean
+    as: latency_ms
+with_budgets:
+- op: join
+  source: validation.budgets
+  'on':
+    left: suite
+    right: suite
+  how: left
+  prefix: budget_
+- op: normalize
+  fields:
+    budget_budget_ms: number
+- op: calculate
+  as: budget_ratio
+  fn: ratio
+  from:
+  - latency_ms
+  - budget_budget_ms
