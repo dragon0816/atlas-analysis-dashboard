@@ -6,9 +6,13 @@
 
 ## 自動驗證
 
-前端47/47 tests 通過，包含 pipeline、models、SSR 與 component DOM。TypeScript／Vite production build 通過；輸出無 source maps，各 JavaScript chunks 低於500kB。Production npm dependencies audit：0 vulnerabilities（2026-10-07 當次查核）。
+前端48/48 tests 通過，包含 pipeline、models、SSR 與 component DOM。TypeScript／Vite production build 通過；輸出無 source maps，各 JavaScript chunks 低於500kB。Production npm dependencies audit：0 vulnerabilities（2026-10-07 當次查核）。
 
 後端33項 tests：32通過、1項 Windows-only test 在 Linux 略過。兩端共用30項 document contract fixtures。另以真 HTTP 對兩份實際 YAML presets 完成 create201／reopen200／update200／stale412：RS Knowledge13 panels、Agent Validation6 panels。Production index 及其4個 JS／CSS assets 皆回200。
+
+Windows CI 曾在 test harness 的 module interception 因路徑分隔字元失配而中斷；已改用標準化路徑比對，增加 Windows／POSIX 路徑 regression，並在 Linux 重跑完整48項前端 tests、build與33項後端 tests。更新後的 Windows 原生執行結果仍以對應 commit 的 CI 為準。
+
+完整 npm audit 另回報7項 development dependency alerts（2 moderate、5 high），都來自 Tailwind 3 的 build/watch 依賴；production-only audit 為0。[braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) 尚無patched release；[selector parser advisory](https://github.com/advisories/GHSA-rj75-hqrm-r3gf) 的修正需要跨dependency major。沒有使用 force update或未經驗證的major override。此專案只對可信任的固定source globs／CSS執行建置；不要讓不可信任的glob patterns進入build/watch工具。Tailwind major migration需另行驗證。
 
 測試涵蓋：
 

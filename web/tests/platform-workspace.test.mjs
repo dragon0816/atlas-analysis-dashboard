@@ -11,7 +11,9 @@ after(() => rm(temporary, { recursive: true, force: true }));
 await build({ stdin: { contents: `export * from './src/platform/applicationLoader'; export * from './src/platform/runtime'; export * from './src/platform/layout'; export * from './src/platform/actions'; export * from './src/platform/documents';`, resolveDir: process.cwd() }, bundle: true, platform: 'node', format: 'cjs', outfile: join(temporary, 'core.cjs') });
 const core = (await import(pathToFileURL(join(temporary, 'core.cjs')).href)).default;
 const files = {};
-async function visit(directory) { for (const entry of await readdir(directory, { withFileTypes: true })) { const path = join(directory, entry.name); if (entry.isDirectory()) await visit(path); else if (/\.(yaml|yml|json|csv)$/.test(path)) files[path.replaceAll('\\', '/')] = await readFile(path, 'utf8'); } }
+const portablePath = value => value.replaceAll("\\", "/");
+const isApplicationModule = value => portablePath(value).endsWith('/src/platform/applications.ts');
+async function visit(directory) { for (const entry of await readdir(directory, { withFileTypes: true })) { const path = join(directory, entry.name); if (entry.isDirectory()) await visit(path); else if (/\.(yaml|yml|json|csv)$/.test(path)) files[portablePath(path)] = await readFile(path, 'utf8'); } }
 await visit(resolve('../applications'));
 const packages = core.readApplicationPackages(files);
 
@@ -46,7 +48,7 @@ globalThis.fetch=async(url,init={})=>{
   }
   throw new Error(`Unexpected mocked request: ${url}`);
 };
-await build({stdin:{contents:`export {DashboardPage} from './src/pages/DashboardPage'; export {StrictMode,createElement,act} from 'react'; export {createRoot} from 'react-dom/client';`,resolveDir:process.cwd()},bundle:true,platform:'node',format:'cjs',loader:{'.css':'empty'},outfile:join(temporary,'ui.cjs'),plugins:[{name:'application-fixtures',setup(build){build.onLoad({filter:/platform[\/]applications\.ts$/},()=>({contents:`export const applicationPackages=${JSON.stringify(packages)};`,loader:'ts'}));}}]});
+await build({stdin:{contents:`export {DashboardPage} from './src/pages/DashboardPage'; export {StrictMode,createElement,act} from 'react'; export {createRoot} from 'react-dom/client';`,resolveDir:process.cwd()},bundle:true,platform:'node',format:'cjs',loader:{'.css':'empty'},outfile:join(temporary,'ui.cjs'),plugins:[{name:'application-fixtures',setup(build){build.onLoad({filter:/applications\.ts$/},args=>isApplicationModule(args.path)?({contents:`export const applicationPackages=${JSON.stringify(packages)};`,loader:'ts'}):undefined);}}]});
 const ui=(await import(pathToFileURL(join(temporary,'ui.cjs')).href)).default;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const settle=()=>ui.act(async()=>{await sleep(35);});
@@ -143,4 +145,13 @@ test('workspace cross-filters, details, drag/resize interruption, and restore de
     await click(button('Cancel'));assert.equal(document.querySelector('h1').textContent,'RS Knowledge Observatory');
     assert.doesNotMatch(document.body.textContent,/Could not render|was disposed/);
   } finally {await ui.act(async()=>root.unmount());await sleep(5);}
+});
+
+
+test('application fixture interception accepts Windows and POSIX module paths',()=>{
+  assert.equal(isApplicationModule('/workspace/web/src/platform/applications.ts'),true);
+  assert.equal(isApplicationModule('C:\\workspace\\web\\src\\platform\\applications.ts'),true);
+  assert.equal(isApplicationModule('C:\\workspace\\web\\src\\other\\applications.ts'),false);
+  assert.equal(isApplicationModule('/workspace/web/src/platform/applications.tsx'),false);
+  assert.equal(portablePath('C:\\fixtures\\application.yaml'),'C:/fixtures/application.yaml');
 });
