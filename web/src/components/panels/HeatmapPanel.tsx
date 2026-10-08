@@ -1,8 +1,9 @@
 import { useId, useMemo, useState } from "react";
 import type { PanelRendererProps } from "../../platform/types";
-import { buildHeatmapModel, heatmapCellValues, heatmapColor, heatmapFraction, type HeatmapCell } from "../../platform/heatmapModel";
+import { buildHeatmapModel, heatmapCellValues, type HeatmapCell } from "../../platform/heatmapModel";
 import { CHROME, ellipsis, fmt } from "./PanelUi";
 import { ChartBox, Tooltip } from "./PanelUi";
+import { colorWithOpacity, heatmapAppearance, heatmapTextColor } from "./panelAppearance";
 
 export function HeatmapPanel({ dataset, panel, onEvent }: PanelRendererProps) {
   const patternId = `heatmap-missing-${useId().replace(/:/g, "")}`;
@@ -10,7 +11,7 @@ export function HeatmapPanel({ dataset, panel, onEvent }: PanelRendererProps) {
   const model = useMemo(() => dataset.kind === "table" ? buildHeatmapModel(dataset, panel.mapping, panel.display) : null, [dataset, panel.mapping, panel.display]);
   if (!model) return <p role="alert">Heatmap requires a tabular dataset.</p>;
   if (model.errors.length) return <p role="alert" className="p-3 text-sm text-rose-300">{model.errors.join(" ")}</p>;
-  const color = (value: number | null, min: number, max: number) => heatmapColor(value, min, max, String(panel.display.color_scale ?? "blue"));
+  const appearance = heatmapAppearance(panel.display), { color } = appearance;
   const threshold = typeof panel.display.threshold === "number" ? panel.display.threshold : null;
   const thresholdAbove = panel.display.thresholdDirection === "above";
   const thresholdHit = (value: number | null) => threshold !== null && value !== null && (thresholdAbove ? value > threshold : value < threshold);
@@ -37,9 +38,9 @@ export function HeatmapPanel({ dataset, panel, onEvent }: PanelRendererProps) {
           {model.cells.map(cell => {
             const x = left + xIndex.get(cell.x.key)! * cellWidth, y = 8 + yIndex.get(cell.y.key)! * cellHeight;
             const label = `${cell.x.label}, ${cell.y.label}: ${cell.value === null ? "Missing" : fmt(cell.value)}${cell.count > 1 ? ` (${cell.count} values, ${model.aggregate})` : ""}`;
-            const t = heatmapFraction(cell.value ?? model.min, model.min, model.max);
+            const fill = color(cell.value, model.min, model.max);
             return <g key={cell.key}>
-              <rect x={x} y={y} width={Math.max(0.5, cellWidth - 1)} height={Math.max(0.5, cellHeight - 1)} fill={cell.missing ? `url(#${patternId})` : color(cell.value, model.min, model.max)}
+              <rect x={x} y={y} width={Math.max(0.5, cellWidth - 1)} height={Math.max(0.5, cellHeight - 1)} fill={cell.missing ? `url(#${patternId})` : fill} fillOpacity={cell.missing ? 1 : appearance.opacity}
                 stroke={thresholdHit(cell.value) ? CHROME.limit : "transparent"} strokeWidth={thresholdHit(cell.value) ? 2 : 0}
                 tabIndex={cell.missing ? undefined : 0} role={cell.missing ? undefined : "button"} aria-label={label}
                 className="outline-none focus:stroke-white" style={{ cursor: cell.missing ? "default" : "pointer" }}
@@ -47,7 +48,7 @@ export function HeatmapPanel({ dataset, panel, onEvent }: PanelRendererProps) {
                 onPointerMove={() => setHover({ cell, x: x + cellWidth / 2, y })}>
                 <title>{label}</title>
               </rect>
-              {showValues && <text x={x + cellWidth / 2} y={y + cellHeight / 2 + 4} textAnchor="middle" fontSize={11} fill={cell.missing ? CHROME.textMuted : t > 0.55 ? "#fff" : "#082f49"} pointerEvents="none">{cell.value === null ? "—" : fmt(cell.value, 3)}</text>}
+              {showValues && <text x={x + cellWidth / 2} y={y + cellHeight / 2 + 4} textAnchor="middle" fontSize={11} fill={cell.missing ? CHROME.textMuted : heatmapTextColor(fill, appearance.opacity, CHROME.surface)} pointerEvents="none">{cell.value === null ? "—" : fmt(cell.value, 3)}</text>}
             </g>;
           })}
           {model.x.filter((_, i) => i % xStep === 0).map(category => <text key={category.key} x={left + (xIndex.get(category.key)! + 0.5) * cellWidth} y={plotHeight + 23} textAnchor="middle" fontSize={10} fill={CHROME.textSecondary}><title>{category.label}</title>{ellipsis(category.label, Math.max(4, Math.floor(cellWidth * xStep / 6)))}</text>)}
@@ -57,7 +58,7 @@ export function HeatmapPanel({ dataset, panel, onEvent }: PanelRendererProps) {
       </>;
     }}</ChartBox>
     <div className="flex items-center gap-2 px-3 pb-1 tabular-nums text-slate-400" aria-label={`Color scale ${model.min} to ${model.max}`}>
-      <span>{fmt(model.min)}</span><span className="h-2 max-w-48 flex-1 rounded-sm" style={{ background: `linear-gradient(to right, ${color(model.min, model.min, model.max)}, ${color(model.max, model.min, model.max)})` }} /><span>{fmt(model.max)}</span>
+      <span>{fmt(model.min)}</span><span className="h-2 max-w-48 flex-1 rounded-sm" style={{ background: `linear-gradient(to right, ${colorWithOpacity(color(model.min, model.min, model.max), appearance.opacity)}, ${colorWithOpacity(color(model.max, model.min, model.max), appearance.opacity)})` }} /><span>{fmt(model.max)}</span>
       <span className="truncate">{panel.mapping.value}</span>
     </div>
   </div>;

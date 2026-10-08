@@ -157,7 +157,11 @@ panels:
   display:
     maxNodes: 250
     maxEdges: 500
-    showLabels: true
+    labelMode: focus
+    boundaryBy: auto
+    showBoundaries: true
+    nodeScale: 1
+    labelSize: 12
   layout:
     x: 0
     y: 3

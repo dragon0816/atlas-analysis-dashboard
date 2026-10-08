@@ -111,3 +111,72 @@ test('renderer SSR reports incompatible data, invalid progress and safe markdown
   assert.ok(html.includes('<h1')); assert.ok(html.includes('<strong>Bold</strong>')); assert.ok(!html.includes('<script>'));assert.ok(!html.includes('href="javascript:'));assert.ok(html.includes('href="https://example.org"'));
 });
 
+
+test('graph regions use generic mapped fields and connected components without changing data', async () => {
+  const { groupGraph } = await import('../src/platform/graphModel.ts');
+  const source = graph([{key:'c',cluster:'West',team:'Ops'}, {key:'a',cluster:'East',team:'Ops'}, {key:'b',team:'Tools'}], [{from:'a',to:'b'}]);
+  const original = JSON.stringify(source);
+  const model = buildGraphModel(source,{nodeId:'key',nodeCommunity:'cluster',nodeGroup:'team',edgeSource:'from',edgeTarget:'to'});
+  assert.equal(groupGraph(model).source,'community');
+  assert.deepEqual(groupGraph(model).groups.map(g=>g.label),['East','Unassigned','West']);
+  assert.deepEqual(groupGraph(model,'group').groups.map(g=>g.label),['Ops','Tools']);
+  const components=groupGraph(model,'components');
+  assert.equal(components.membership.get('a'),components.membership.get('b'));
+  assert.notEqual(components.membership.get('a'),components.membership.get('c'));
+  assert.equal(groupGraph(buildGraphModel(graph([{id:'a',group:'Team'}]))).source,'group');
+  assert.equal(groupGraph(buildGraphModel(graph([{id:'a'}]))).source,'components');
+  assert.equal(JSON.stringify(source),original);
+});
+
+test('region geometry safely handles empty, single, paired, collinear and dragged outliers', async () => {
+  const { groupGraph, graphBoundaries } = await import('../src/platform/graphModel.ts');
+  assert.deepEqual(forceLayout(buildGraphModel(graph([]))),new Map());
+  for(const count of [1,2,3,8]) {
+    const model=buildGraphModel(graph(Array.from({length:count},(_,i)=>({id:String(i),community:'Same'}))));
+    const grouping=groupGraph(model), positions=forceLayout(model);
+    assert.equal(positions.size,count);
+    const ids=new Set(model.nodes.map(n=>n.id));
+    const [boundary]=graphBoundaries(grouping,ids,id=>positions.get(id));
+    assert.equal(boundary.count,count); assert.ok(!/NaN|Infinity/.test(boundary.path));
+    for(const p of positions.values()) assert.ok(p.x>boundary.bounds.x0 && p.x<boundary.bounds.x1 && p.y>boundary.bounds.y0 && p.y<boundary.bounds.y1);
+    positions.set('0',{x:1500,y:-600});
+    const [moved]=graphBoundaries(grouping,ids,id=>positions.get(id));
+    assert.notEqual(moved.path,boundary.path); assert.ok(moved.bounds.x1>1500 && moved.bounds.y0 < -600);
+    const hidden=graphBoundaries(grouping,new Set(),id=>positions.get(id));assert.deepEqual(hidden,[]);
+  }
+  const model=buildGraphModel(graph([{id:'a',group:'A'},{id:'b',group:'A'},{id:'c',group:'A'}]));
+  const collinear=new Map([['a',{x:0,y:0}],['b',{x:50,y:0}],['c',{x:100,y:0}]]);
+  assert.ok(!/NaN|Infinity/.test(graphBoundaries(groupGraph(model),new Set(collinear.keys()),id=>collinear.get(id))[0].path));
+});
+
+test('cluster layout separates fixture groups and is stable across input order', async () => {
+  const { groupGraph, graphBoundaries, graphNodeRadius }=await import('../src/platform/graphModel.ts');
+  const {readFile}=await import('node:fs/promises');
+  const data=JSON.parse(await readFile('../applications/rs_knowledge/data/graph.json','utf8'));
+  const model=buildGraphModel({...data,kind:'graph'}), positions=forceLayout(model), grouping=groupGraph(model);
+  assert.deepEqual(forceLayout({...model,nodes:[...model.nodes].reverse(),edges:[...model.edges].reverse()}),positions);
+  const boundaries=graphBoundaries(grouping,new Set(model.nodes.map(n=>n.id)),id=>positions.get(id));
+  assert.equal(boundaries.length,5);
+  for(let i=0;i<boundaries.length;i++) for(let j=i+1;j<boundaries.length;j++) {
+    const a=boundaries[i].bounds,b=boundaries[j].bounds;
+    assert.ok(a.x1 < b.x0 || b.x1 < a.x0 || a.y1 < b.y0 || b.y1 < a.y0,'initial region envelopes do not overlap');
+  }
+  const max=Math.max(...model.nodes.map(n=>n.size));
+  assert.ok(model.nodes.every(n=>graphNodeRadius(n,max)<=4));
+  for(let i=0;i<model.nodes.length;i++) for(let j=i+1;j<model.nodes.length;j++) {
+    const a=model.nodes[i],b=model.nodes[j],pa=positions.get(a.id),pb=positions.get(b.id);
+    assert.ok(Math.hypot(pa.x-pb.x,pa.y-pb.y)>=graphNodeRadius(a,max)+graphNodeRadius(b,max),'node dots do not overlap');
+  }
+});
+
+// Size controls must not merge fixture regions back into the original hairball.
+test('graph size settings keep region envelopes separate at supported extremes', async()=> {
+  const {groupGraph,graphBoundaries}=await import('../src/platform/graphModel.ts');
+  const {readFile}=await import('node:fs/promises');
+  const input=JSON.parse(await readFile('../applications/rs_knowledge/data/graph.json','utf8'));
+  const model=buildGraphModel({...input,kind:'graph'}),groups=groupGraph(model),ids=new Set(model.nodes.map(n=>n.id));
+  for(const size of [.5,1.5,2]) {
+    const points=forceLayout(model,720,440,'auto',size),bounds=graphBoundaries(groups,ids,id=>points.get(id),17+6*size).map(b=>b.bounds);
+    for(let i=0;i<bounds.length;i++)for(let j=i+1;j<bounds.length;j++){const a=bounds[i],b=bounds[j];assert.ok(a.x1<b.x0||b.x1<a.x0||a.y1<b.y0||b.y1<a.y0);}
+  }
+});

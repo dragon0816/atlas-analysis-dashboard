@@ -62,7 +62,13 @@ Line、mask、bar、box、histogram、stat、gauge、table 均提供直接 click
 
 Heatmap 支援類別軸、重複 cell aggregation、sequential scale、固定 min/max、threshold、數值、missing/zero 區分、tooltip 及 click。
 
-Network graph 支援 force layout、pan/zoom、node drag、fit、搜尋、node/edge type、community filters、labels、neighborhood/path highlight 及 legend。圖中的缺失關係只是資料狀態，不代表工具產生了新推論。
+Network graph 支援 SVG 2D 與按需載入的 Three.js WebGL 2 renderer。兩者提供搜尋、node/edge type、community filters、fit、neighborhood/path highlight、labels 與群組邊界；2D 有 pan/zoom/node drag，3D 有 orbit/zoom/pan 與可存取的節點／邊選取。切換維度保留篩選、選取與路徑，返回 2D 保留相機；離開 3D 會釋放 renderer 資源，WebGL 失敗會回退 2D。
+
+布局可選 By connections（跨群組的加權連線布局）或 Separated groups（群組錨點布局）。邊界依 community、group 或 undirected connected components 分組；依連線布局的邊界可能重疊或包含非成員的畫面位置，成員仍由資料判定。3D 深度與邊界體積不代表 evidence strength。圖中的缺失關係只是資料狀態，不代表工具產生了新推論。
+
+RS Knowledge 的 graph_comparison.json 合併保留原始 sparse fixture 與可重現的 interconnected synthetic fixture，scenario selector 先取情境再建模；切換情境會清除選取與圖內篩選。共享節點只有一個 identity，domain_memberships 可含多個領域；全域 market bindings 支援陣列成員，但 community 邊界仍用唯一的主要群組。可用 node scripts/generate-connected-fixture.mjs 重新產生此合成比較檔。
+
+Heatmap／bar 的安全 hex 顏色及 fillOpacity（0–1）控制填色，不降低文字透明度。外觀預覽與可儲存的 display 設定分開處理。Dashboards／Filters 收合偏好以 atlas.dashboard.controls.v1 儲存在 localStorage，不寫入 dashboard 文件。
 
 標準 actions 為 set_filter、open_details、navigate、drill_down、highlight、open_link。`action.values` 可使用 `$x`、`$y`、`$id` 或原始 row 欄位。Details 關聯條件來自 action.values，不硬編碼領域欄位。
 
@@ -78,3 +84,7 @@ Dashboard document 使用 schemaVersion 2，包含 applicationId、variables、v
 文件最大 2 MB。讀取不寫回。使用跨程序鎖、原子 replace、ETag compare-and-swap 防止失去更新；路徑及 symlink 防護避免離開專用資料目錄。
 
 Presets 與個人變體分離。這是單使用者本機工具，未提供帳號、分享權限、多人協作、伺服器端外部 source credential management 或動態 application marketplace。
+
+## 未實作的整合
+
+沒有 Atlas／Vault adapter、自動讀取 Vault、Atlas 匯出／匯入或資料上傳精靈。現有 WebSocket provider 接收 bounded 完整 snapshots，不是事件級增量合併或增量 graph/layout 引擎。新增領域 package 仍需重建前端。隨附 server 維持 Python 本機持久化；本專案不包含託管 demo 的 worker、雲端資料庫或部署資源。

@@ -3,6 +3,8 @@ import type { PanelRendererProps, Row, TabularDataset } from "../../platform/typ
 import { buildBoxes, buildHistogram, buildSeries, fieldExists, finite, limitWarnings, numericRows, reduceValues, valueField } from "./BasicModels";
 import { ChartBox, CHROME, ellipsis, fmt, linearScale, SERIES_COLORS, ticks, Warnings } from "./PanelUi";
 
+import { normalizeHexColor, panelFillOpacity } from "./panelAppearance";
+
 type TableProps = PanelRendererProps & { dataset: TabularDataset };
 const keyboard = (event: KeyboardEvent<SVGElement>, activate: () => void) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } };
 const color = (index: number) => SERIES_COLORS[index % SERIES_COLORS.length];
@@ -60,6 +62,7 @@ function LineView({ dataset, panel, onEvent }: TableProps) {
 }
 
 function BarView({ dataset, panel, onEvent }: TableProps) {
+  const fillColor = normalizeHexColor(panel.display.fillColor), fillOpacity = panelFillOpacity(panel.display);
   const model = numericRows(dataset, panel), category = panel.mapping.category ?? panel.mapping.x ?? panel.mapping.label;
   const values = model.values.slice(0, 200), warnings = [...model.warnings, ...limitWarnings(model.values.length, 200)];
   const error = model.error || (category && !fieldExists(dataset, category) ? `Category field “${category}” does not exist.` : "");
@@ -69,7 +72,7 @@ function BarView({ dataset, panel, onEvent }: TableProps) {
     return <svg width={width} height={height} role="img" aria-label={`${panel.title}: bar chart`}><YAxis scale={y} width={width} />{values.map((item, index) => {
       const label = category ? String(item.row[category] ?? "Unspecified") : String(index + 1), zero = y.at(0), end = y.at(item.value);
       const activate = () => onEvent?.({ entity: "mark", values: { ...item.row, category: label, x: label, y: item.value, value: item.value } });
-      return <g key={index}><rect x={54 + index * space + space * 0.1} y={Math.min(zero, end)} width={Math.max(1, space * 0.8)} height={Math.max(1, Math.abs(zero - end))} fill={color(panel.mapping.series ? [...new Set(values.map(value => String(value.row[panel.mapping.series])))].indexOf(String(item.row[panel.mapping.series])) : 0)} role="button" tabIndex={0} aria-label={`${label}: ${fmt(item.value)}`} onClick={activate} onKeyDown={event => keyboard(event, activate)} style={{ cursor: "pointer" }}><title>{`${label}: ${fmt(item.value)}`}</title></rect>{index % every === 0 && <text x={54 + (index + 0.5) * space} y={height - 12} textAnchor="middle" fill={CHROME.textSecondary} fontSize={10}>{ellipsis(label, Math.max(4, Math.floor(space * every / 7)))}</text>}</g>;
+      return <g key={index}><rect x={54 + index * space + space * 0.1} y={Math.min(zero, end)} width={Math.max(1, space * 0.8)} height={Math.max(1, Math.abs(zero - end))} fillOpacity={fillOpacity} fill={fillColor ?? color(panel.mapping.series ? [...new Set(values.map(value => String(value.row[panel.mapping.series])))].indexOf(String(item.row[panel.mapping.series])) : 0)} role="button" tabIndex={0} aria-label={`${label}: ${fmt(item.value)}`} onClick={activate} onKeyDown={event => keyboard(event, activate)} style={{ cursor: "pointer" }}><title>{`${label}: ${fmt(item.value)}`}</title></rect>{index % every === 0 && <text x={54 + (index + 0.5) * space} y={height - 12} textAnchor="middle" fill={CHROME.textSecondary} fontSize={10}>{ellipsis(label, Math.max(4, Math.floor(space * every / 7)))}</text>}</g>;
     })}</svg>;
   }}</ChartBox></PanelContainer>;
 }

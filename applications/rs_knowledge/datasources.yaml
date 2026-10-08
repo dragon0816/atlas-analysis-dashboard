@@ -14,7 +14,7 @@ knowledge.graph:
   type: json
   label: Graph
   format: graph
-  path: data/graph.json
+  path: data/graph_comparison.json
   bindings:
     market: market
     product: product

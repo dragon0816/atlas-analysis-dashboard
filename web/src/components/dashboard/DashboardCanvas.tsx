@@ -4,9 +4,9 @@ import { GRID_COLUMNS, GRID_GAP, GRID_ROW, responsivePanels, settlePanels } from
 import type { PlatformRuntime } from "../../platform/runtime";
 import type { Dataset, PanelDefinition, PanelEvent, Row, VariableValues } from "../../platform/types";
 
-export function DashboardCanvas({ panels, variables, runtime, editing, selected, refreshKey, onSelect, onPanels, onEvent, onData }: {
+export function DashboardCanvas({ panels, variables, runtime, editing, selected, refreshKey, onSelect, onPanels, onRemove, onEvent, onData }: {
   panels: PanelDefinition[]; variables: VariableValues; runtime: PlatformRuntime; editing: boolean; selected: string | null; refreshKey: number;
-  onSelect: (id: string) => void; onPanels: (panels: PanelDefinition[]) => void; onEvent: (panel: PanelDefinition, event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void;
+  onSelect: (id: string) => void; onRemove: (id: string) => void; onPanels: (panels: PanelDefinition[]) => void; onEvent: (panel: PanelDefinition, event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void;
 }) {
   const grid = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1000);
@@ -17,6 +17,19 @@ export function DashboardCanvas({ panels, variables, runtime, editing, selected,
     if (grid.current) observer.observe(grid.current);
     return () => { observer.disconnect(); cleanup.current?.(); };
   }, []);
+  useEffect(() => {
+    // A removed panel or ended edit session must not be resurrected by a pending drag.
+    if (!editing || (moving && !panels.some(panel => panel.id === moving))) cleanup.current?.();
+  }, [editing, moving, panels]);
+  const remove = (id: string) => {
+    cleanup.current?.();
+    const cards = Array.from(grid.current?.querySelectorAll<HTMLElement>("[data-panel-id]") ?? []);
+    const index = cards.findIndex(card => card.dataset.panelId === id);
+    const target = cards[index + 1] ?? cards[index - 1];
+    onRemove(id);
+    // Keep keyboard users in the canvas after removing the focused control.
+    (target?.querySelector<HTMLButtonElement>(".atlas-panel-remove") ?? document.querySelector<HTMLButtonElement>(".atlas-panel-library>button"))?.focus();
+  };
   const columns = editing ? GRID_COLUMNS : width < 480 ? 1 : width < 850 ? 6 : GRID_COLUMNS;
   const view = useMemo(() => responsivePanels(panels, columns), [panels, columns]);
   const start = (panel: PanelDefinition, mode: "move" | "resize", event: React.PointerEvent) => {
@@ -42,14 +55,14 @@ export function DashboardCanvas({ panels, variables, runtime, editing, selected,
     cleanup.current = () => finish();
   };
   return <div className="atlas-canvas-scroll"><div ref={grid} className={`atlas-canvas ${editing ? "is-editing" : ""}`} style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gridAutoRows: GRID_ROW, gap: GRID_GAP }}>
-    {!panels.length && <div className="atlas-empty-board"><span className="text-4xl text-sky-400">▦</span><h2>Your dashboard starts here</h2><p>Choose a visualization from the panel library, then connect a data source.</p></div>}
+    {!panels.length && <div className="atlas-empty-board"><span className="text-4xl text-sky-400">▦</span><h2>Your dashboard starts here</h2><p>{editing ? "Choose a visualization from the panel library, or Cancel to restore your dashboard." : "Choose Edit Dashboard to add panels."}</p></div>}
     {view.map(panel => <div data-panel-id={panel.id} key={panel.id} className={`atlas-panel ${selected === panel.id && editing ? "is-selected" : ""} ${moving === panel.id ? "is-moving" : ""}`} style={{ gridColumn: `${panel.layout.x + 1} / span ${panel.layout.w}`, gridRow: `${panel.layout.y + 1} / span ${panel.layout.h}` }} onClick={() => editing && onSelect(panel.id)}>
-      <PanelCard panel={panel} variables={variables} runtime={runtime} editing={editing} refreshKey={refreshKey} onEvent={event => onEvent(panel, event)} onData={onData} onMove={event => start(panels.find(p => p.id === panel.id)!, "move", event)} />
+      <PanelCard panel={panel} variables={variables} runtime={runtime} editing={editing} refreshKey={refreshKey} onEvent={event => onEvent(panel, event)} onData={onData} onRemove={() => remove(panel.id)} onMove={event => start(panels.find(p => p.id === panel.id)!, "move", event)} />
       {editing && <button type="button" className="atlas-resize" aria-label={`Resize ${panel.title}`} title="Drag to resize. Use Layout properties for keyboard control." onPointerDown={event => start(panels.find(p => p.id === panel.id)!, "resize", event)}>◢</button>}
     </div>)}
   </div></div>;
 }
-function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, onData, onMove }: { panel: PanelDefinition; variables: VariableValues; runtime: PlatformRuntime; editing: boolean; refreshKey: number; onEvent: (event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void; onMove: (event: React.PointerEvent) => void }) {
+function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, onData, onMove, onRemove }: { panel: PanelDefinition; variables: VariableValues; runtime: PlatformRuntime; editing: boolean; refreshKey: number; onEvent: (event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void; onMove: (event: React.PointerEvent) => void; onRemove: () => void }) {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -78,8 +91,9 @@ function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, on
   const rows: Row[] = dataset?.kind === "table" ? dataset.rows : dataset ? [...dataset.nodes.map(n => ({ entity: "node", ...n })), ...dataset.edges.map(e => ({ entity: "edge", ...e }))] : [];
   const columns = [...new Set(rows.slice(0, 100).flatMap(Object.keys))];
   const fullscreen = () => { const target = card.current?.parentElement; if (document.fullscreenElement) void document.exitFullscreen(); else if (target?.requestFullscreen) void target.requestFullscreen().catch(ex => setError(`Fullscreen: ${String(ex)}`)); };
-  return <div ref={card} className="atlas-panel-inner"><header className="atlas-panel-header">
+  return <div ref={card} className="atlas-panel-inner"><header className={`atlas-panel-header ${editing ? "is-editing" : ""}`}>
     {editing && <button type="button" className="atlas-drag" onPointerDown={onMove} title="Drag panel. Use Layout properties for keyboard control." aria-label={`Move ${panel.title}`}>⠿</button>}
+    {editing && <button type="button" className="atlas-button atlas-panel-remove" aria-label={`Remove ${panel.title}`} onClick={event => { event.stopPropagation(); onRemove(); }}>Remove</button>}
     <h2 title={panel.title}>{panel.title}</h2><span className="atlas-panel-type">{panel.type === "network" ? "GRAPH" : panel.type.toUpperCase()}</span>
     <button type="button" className="atlas-icon-button" title="Refresh panel" aria-label={`Refresh ${panel.title}`} onClick={() => setLocalRefresh(k => k + 1)}>↻</button>
     <button type="button" className={`atlas-icon-button ${showData ? "text-sky-300" : ""}`} title="Inspect dataset" aria-label={`Data for ${panel.title}`} onClick={() => setShowData(v => !v)}>▤</button>

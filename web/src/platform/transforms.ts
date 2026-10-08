@@ -60,7 +60,7 @@ function filterClauses(data: Dataset, clauses: Row[], skipMissingGraphFields = f
     // Validate operators even for empty datasets.
     compare(null, clause.operator ?? "eq", clause.value);
   }
-  const match = (row: Row) => clauses.every(c => skipMissingGraphFields && !Object.hasOwn(row, String(c.field)) || compare(row[String(c.field)], c.operator ?? "eq", c.value));
+  const match = (row: Row) => clauses.every(c => skipMissingGraphFields && !Object.hasOwn(row, String(c.field)) || (skipMissingGraphFields && Array.isArray(row[String(c.field)]) ? (row[String(c.field)] as unknown[]).some(value => compare(value, c.operator ?? "eq", c.value)) : compare(row[String(c.field)], c.operator ?? "eq", c.value)));
   if (data.kind === "table") return { ...data, rows: data.rows.filter(match) };
   const nodes = data.nodes.filter(match), ids = new Set(nodes.map(n => String(n[graphMapping.nodeId || "id"])));
   return { ...data, nodes, edges: data.edges.filter(e => ids.has(String(e[graphMapping.edgeSource || "source"])) && ids.has(String(e[graphMapping.edgeTarget || "target"])) && match(e)) };
