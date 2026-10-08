@@ -4,6 +4,14 @@
 
 本檔記錄 standalone 版本此次同步的驗證；component DOM／renderer double 不等於實際 GPU 或完整瀏覽器驗收。
 
+## 本機文件交接複查
+
+- 2026-10-08 文件更新：新增 [本機操作指南](LOCAL_DEVELOPMENT.md) 與 [AEP 整合交接](AEP_TELEMETRY_INTEGRATION.md)，只改文件，未新增 telemetry 功能。
+- Linux、Node 24.19.0、Python 3.12.14 重跑：前端 79／79、TypeScript／Vite build 通過；後端 35 項中 34 通過、1 項 Windows-only 略過。沿用既有 lockfile 對應依賴，本次沒有重新完成乾淨 npm ci。
+- 文件相對連結／code fences 已檢查；隔離資料目錄的 loopback smoke 驗證首頁 GET／HEAD、index 連結的 JS／CSS、CSP 與空白 `/dashboards` 均正常。PowerShell 指令與 macOS 原生環境未在本次 Linux 環境執行。
+- 基準 commit `ffe3db1212293a84a3adf4b82feb51da33500974` 的 [GitHub Actions run 37773749357](https://github.com/dragon0816/atlas-analysis-dashboard/actions/runs/37773749357) 已確認 Ubuntu／Windows job 成功，包含 npm ci、tests、build 與 Python tests。這不等於 Windows 互動式瀏覽器／GPU 或 macOS 原生驗收；後續 commit 需另看其 CI。
+- 本次沒有執行本機 AEP API、export CLI 或 WebSocket 聯調；文件中的 AEP 新介面是未獨立驗證的外部回報。JSONL／reducer／巢狀 timeline／有向 transition path／p95 仍待實作。
+
 ## 本次自動驗證
 
 - Node.js 24.19.0：前端完整 79／79 tests 通過，無略過。
@@ -34,7 +42,7 @@
 
 ## 未計入本機通過的項目
 
-- 本次 commit 的 Ubuntu／Windows GitHub Actions 結果；CI設定保留雙平台、Python 3.13、Node 24、npm ci、tests與build
+- 後續 commit 的 Ubuntu／Windows GitHub Actions 結果；基準 commit 的已確認結果見上方。CI設定保留雙平台、Python 3.13、Node 24、npm ci、tests與build
 - 真實瀏覽器／GPU的WebGL 2視覺、context loss、完整fullscreen、觸控、不同尺寸與SVG pointer座標
 - Windows與macOS原生filesystem／ACL／locking
 - 真實外部REST／WebSocket站點、CORS、企業登入或效能benchmark

@@ -16,27 +16,33 @@
 
 ## 快速開始
 
-需求：Node.js 24；Linux/macOS 使用 Python 3.11 以上，Windows 使用 Python 3.13 以上。Windows 分支為實驗支援，尚未在本次本機執行環境驗證，請查看對應 CI 結果。
+第一次移到本機，請依 [本機執行、開發與驗收](docs/LOCAL_DEVELOPMENT.md) 操作；內含 Windows PowerShell、macOS／Linux、儲存位置及排錯。要接 AEP Harness，接著讀 [Telemetry 整合與本機交接](docs/AEP_TELEMETRY_INTEGRATION.md)。**目前可以測試通用 dashboard；AEP telemetry adapter 尚未實作。**
+
+需求：Node.js 24（package 要求 >=24）；Linux/macOS 使用 Python 3.11 以上，Windows 使用 Python 3.13 以上。Windows 分支為實驗支援；Ubuntu／Windows CI 已有通過紀錄，但不代表 Windows 實機瀏覽器／GPU 或 macOS 已驗收。
 
 ```sh
+git clone https://github.com/dragon0816/atlas-analysis-dashboard.git
+cd atlas-analysis-dashboard
 cd web
 npm ci
 npm test
 npm run build
 cd ..
-python -m unittest discover -s tests -p 'server*.py'
-python -m server --port 8127
+python3 -m unittest discover -s tests -p 'server*.py'
+python3 -m server --port 8127
 ```
+
+以上為 macOS／Linux；Windows 請使用本機指南中的 `npm.cmd` 與 `py -3.13` 指令。
 
 開啟 http://127.0.0.1:8127 。伺服器預設只監聽 loopback；無須 Python 第三方套件。使用者 dashboard 預設寫入使用者資料目錄，不會寫入 application presets 或 repository。請勿把這個本機伺服器當成已具備登入、多人權限或公開託管能力的服務。
 
 開發模式：先啟動後端，再於另一個 terminal 執行前端。
 
 ```sh
-python -m server --port 8127 --allow-origin http://127.0.0.1:5173
+python3 -m server --port 8127 --allow-origin http://127.0.0.1:5173
 # 另一個 terminal
 cd web
-npm run dev
+npm run dev -- --port 5173 --strictPort
 ```
 
 ## 內附 application
@@ -66,8 +72,9 @@ RS Knowledge 的 graph 可切換原始 sparse 情境（140 nodes／120 edges）�
 - 尚未實作 Atlas／Vault adapter、Atlas 匯出／匯入流程，也不會自動讀取真實 Vault。
 - JSON／CSV package 與 REST provider 已存在，但沒有新增檔案上傳／通用資料匯入精靈。
 - WebSocket provider 處理完整 snapshots；尚未提供事件串流的增量合併、增量 graph 更新或增量布局。
+- 尚無 AEP `aep.telemetry.v1` 驗證／JSONL 匯入／事件 reducer、巢狀 span timeline、方向性 transition path 或 p95 聚合。通用 timeline 為平面列表；graph 可畫箭頭，但現有 shortest path 採無向搜尋。
 - 本機 Python server 仍是唯一隨附後端；沒有帶入託管 demo 的雲端資料庫、登入、部署設定或任何憑證。
 
 若儲存時看到 revision 衝突（HTTP 412），請重新開啟最新版本，避免覆寫另一個視窗已儲存的修改。
 
-詳見 [架構與設定](docs/ARCHITECTURE.md)、[安全與資料界線](docs/SECURITY.md) 及 [驗證紀錄](docs/VALIDATION.md)。
+詳見 [本機開發](docs/LOCAL_DEVELOPMENT.md)、[AEP 整合交接](docs/AEP_TELEMETRY_INTEGRATION.md)、[架構與設定](docs/ARCHITECTURE.md)、[安全與資料界線](docs/SECURITY.md) 及 [驗證紀錄](docs/VALIDATION.md)。
