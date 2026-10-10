@@ -56,3 +56,36 @@
 4. Save As → 修改 → Save；第二視窗先更新後，舊revision應無法覆寫，失敗保留草稿。
 5. Graph切換兩個synthetic情境、兩種布局與2D／3D；核對搜尋、filters、path、selection、zoom／fit及fallback提示。
 6. Heatmap／bar調色與透明度，Save後重開確認設定；切換Agent Validation核對CSV join及budget ratio。
+
+## 2026-10-10 AEP integration work in progress
+
+- Node v24.11.1: 25 AEP unit/integration tests passed using the built-in test runner. Covers JSONL/schema bounds, duplicate/ordering/conflict handling, full-run filters, missing data, quantiles, directed paths, REST pagination, cancellation, live sharing/reconnect, cursor reset/gaps, cleanup and runtime registration.
+- Live read-only AEP checks: `/runs` and `/health` HTTP 200; local Origin returned the matching CORS header. All six provider views returned datasets. Busy 24-hour overview reached the explicit 10,000-event bound; a selected complete run returned 29 events, 23 spans and 10 transitions without truncation. No trace contents were written to the repository.
+- Native Node WebSocket received an `aep.telemetry.v1` frame with numeric ingest_seq. Its close subsequently emitted an error (AEP's minimal close handling); this is not a browser reconnect acceptance result.
+- Full `npm test` attempted before the final added tests: 46 passed, six test files failed to load because esbuild was unavailable. AEP UI tests were subsequently added but are also blocked by missing dependencies.
+- `npm run build` blocked: tsc unavailable because npm ci could not complete. No typecheck/build success claimed.
+- `npm ci --cache .npm-cache --no-audit --no-fund` blocked by corporate Zscaler HTTP 403 for registry.npmjs.org. No registry substitution or security-policy bypass attempted. package.json/package-lock.json unchanged.
+- Python 3.12.14 server test attempt: 35 tests, 19 errors at the existing Windows Python 3.13+ private-directory guard, seven skips, nine passes. This is not an accepted Windows test result; no guard was disabled.
+- No production browser build was available, so interactive browser acceptance remains pending.
+
+- 2026-10-10 proxy follow-up: inspected the user-designated SSH config read-only. Did not start its SOCKS tunnel to circumvent the known corporate public-registry denial. Internal `https://npm.rsint.net` check failed with TLS unexpected EOF. Approved dependency access is still unresolved.
+
+## 2026-10-10 — npm access recovered and frontend verification passed
+
+- Retried npm ci using the existing registry/configuration: succeeded, 184 packages installed. No SSH tunnel was started and no proxy/registry configuration was changed by this task.
+- Fixed TS2801 in AepProvider: when the last query consumer releases the session, abort its controller without the redundant narrowed Promise condition. Aborting a settled controller is harmless; shared active consumers remain protected by the user count.
+- Full frontend suite: 106 tests passed, zero failures/skips, including AEP UI and existing applications.
+- npm run build: passed TypeScript and Vite production build. Existing >500 kB chunk warnings remain nonfatal.
+- esbuild required execution outside the filesystem sandbox to read parent directories; no test assertions or security controls were changed.
+- Windows backend verification still requires Python 3.13+. Real browser acceptance remains pending.
+
+## 2026-10-10 — AEP benchmark telemetry (Claude Code)
+
+- `npm test`: 112 passed, 0 failed (adds `aep-benchmarks.test.mjs`, 6 tests).
+- `npm run build`: TypeScript and Vite production build passed; the existing >500 kB chunk warnings remain.
+- `parseDashboardDocument` accepts `applications/aep_harness/dashboards/overview.yaml` and `benchmarks.yaml`.
+- Live shell check (not browser acceptance): AEP Agent Web from commit d29ac63; `AepProvider` read the `tel-smoke-001` benchmark run, its graded case (coverage 0.438), the case's AEP conversation run by `trace_id` and its 23 spans without warnings.
+
+## 2026-10-10 — Combined integration commit verification
+
+User authorized committing the Atlas integration and Claude Code benchmark additions together. Reran full npm test: 112 passed, zero failures/skips. npm run build passed TypeScript and Vite (166 modules); existing chunk-size warnings remain. No implementation changes were made during commit preparation. Windows Python 3.13 backend tests and real browser acceptance remain pending, so this is a checkpoint commit, not full acceptance. No AEP modifications or push. Temporary provider patch is excluded.

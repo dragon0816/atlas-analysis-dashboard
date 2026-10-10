@@ -1,0 +1,33 @@
+import { test, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { JSDOM } from 'jsdom';
+const directory=await mkdtemp(join(tmpdir(),'atlas-aep-ui-'));
+const dom=new JSDOM('<!doctype html><div id="root"></div>',{url:'http://127.0.0.1:8127'});
+for(const key of ['window','document','HTMLElement','Event','MouseEvent','Node'])globalThis[key]=dom.window[key];
+globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const NativeMessageChannel=globalThis.MessageChannel,channels=[];
+globalThis.MessageChannel=class extends NativeMessageChannel{constructor(){super();channels.push(this);}};
+after(async()=>{dom.window.close();for(const channel of channels){channel.port1.close();channel.port2.close();}globalThis.MessageChannel=NativeMessageChannel;await rm(directory,{recursive:true,force:true});});
+await build({stdin:{contents:`export {NestedTimeline} from './src/components/aep/NestedTimeline'; export {AepControls} from './src/components/aep/AepControls'; export {createElement,act,StrictMode} from 'react'; export {createRoot} from 'react-dom/client';`,resolveDir:process.cwd()},bundle:true,platform:'node',format:'cjs',outfile:join(directory,'ui.cjs')});
+const ui=(await import(pathToFileURL(join(directory,'ui.cjs')).href)).default;
+test('nested timeline exposes open/missing spans and keyboard-accessible details',async()=>{
+  const root=ui.createRoot(document.getElementById('root')),events=[];
+  const dataset={kind:'table',fields:[],meta:{warnings:[],truncated:false,sourceRows:2},rows:[{run_id:'r',span_id:'parent',label:'Parent',depth:0,start:'2026-10-10T00:00:00Z',end:null,open:true,duration_ms:null},{run_id:'r',span_id:'child',label:'Child',depth:1,start:null,end:'2026-10-10T00:00:02Z',missing_start:true,missing_parent:true,duration_ms:20}]};
+  await ui.act(async()=>root.render(ui.createElement(ui.NestedTimeline,{dataset,panel:{},onEvent:e=>events.push(e)})));
+  const buttons=document.querySelectorAll('button');assert.equal(buttons.length,2);assert.match(buttons[0].textContent,/open.*duration unknown/);assert.match(buttons[1].textContent,/missing start.*missing parent/);assert.equal(buttons[1].querySelector('span').style.paddingLeft,'12px');
+  await ui.act(async()=>buttons[1].click());assert.equal(events[0].values.span_id,'child');await ui.act(async()=>root.unmount());
+});
+test('controls switch recent window and import JSONL without sending its contents to the server',async()=>{
+  const root=ui.createRoot(document.getElementById('root')),calls=[],ranges=[];
+  const provider={setLive:value=>calls.push(['live',value]),useServer:()=>calls.push(['server']),importJSONL:text=>{calls.push(['import',text]);return {events:1,warnings:[]};}};
+  await ui.act(async()=>root.render(ui.createElement(ui.StrictMode,{},ui.createElement(ui.AepControls,{provider,refresh:()=>calls.push(['refresh']),setTimeRange:range=>ranges.push(range)}))));
+  const select=document.querySelector('select');await ui.act(async()=>{select.value='15';select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});assert.equal(ranges.length,1);assert.match(ranges[0],/Z\/$/);
+  const input=document.querySelector('input[type="file"]');Object.defineProperty(input,'files',{configurable:true,value:[{size:10,text:async()=>'{"fixture":true}'}]});
+  await ui.act(async()=>input.dispatchEvent(new dom.window.Event('change',{bubbles:true})));assert.ok(calls.some(c=>c[0]==='import'));assert.match(document.body.textContent,/Offline replay/);assert.equal(document.querySelector('input[type="checkbox"]').disabled,true);
+  await ui.act(async()=>root.unmount());
+});

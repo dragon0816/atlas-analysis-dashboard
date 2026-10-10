@@ -1,6 +1,6 @@
 # 本機執行、開發與驗收
 
-先跑內附 synthetic applications，確認 dashboard 本身正常，再依 [AEP 整合交接](AEP_TELEMETRY_INTEGRATION.md) 接本機 telemetry。本 repo 沒有 AEP host、正式 traces、API credentials 或已完成的 AEP adapter。
+先跑內附 synthetic applications，確認 dashboard 本身正常，再依 [AEP 整合交接](AEP_TELEMETRY_INTEGRATION.md) 接本機 telemetry。本 repo 不包含 AEP host、正式 traces 或 API credentials。AEP adapter 已加入但完整驗證尚未完成，請先讀 docs/HANDOFF.md。
 
 ## 1. 環境與版本
 

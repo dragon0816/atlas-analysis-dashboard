@@ -62,10 +62,10 @@ function GraphView({ dataset, panel, onEvent }: PanelRendererProps) {
   const matches = normalizedSearch ? visible.nodes.filter(node => `${node.id} ${node.label}`.toLocaleLowerCase().includes(normalizedSearch)) : [];
   const matchIds = new Set(matches.map(node => node.id));
   const selectedNode = visible.nodes.find(node => node.id === selected);
-  const computedPath = useMemo(() => selected && pathTarget ? shortestGraphPath(visible, selected, pathTarget) : [], [visible, selected, pathTarget]);
+  const computedPath = useMemo(() => selected && pathTarget ? shortestGraphPath(visible, selected, pathTarget, panel.display.directed_path === true) : [], [visible, selected, pathTarget, panel.display.directed_path]);
   const configuredPath = Array.isArray(panel.display.highlightPath) ? panel.display.highlightPath.map(String) : [];
   const path = pathTarget ? computedPath : configuredPath;
-  const pathNodes = new Set(path), pathEdges = graphPathEdges(visible, path);
+  const pathNodes = new Set(path), pathEdges = graphPathEdges(visible, path, panel.display.directed_path === true);
   const neighbors = selectedNode && neighborhood ? graphNeighborhood(visible, selectedNode.id) : new Set<string>();
   const maxSize = Math.max(1, ...model.nodes.map(node => node.size));
   const radius = (node: GraphNode) => graphNodeRadius(node, maxSize, nodeScale);
@@ -219,7 +219,7 @@ function GraphView({ dataset, panel, onEvent }: PanelRendererProps) {
       </svg>}
       {hover && <div className="pointer-events-none absolute bottom-2 left-2 max-w-[90%] rounded border border-slate-700 bg-slate-950/95 px-2 py-1 text-xs text-slate-300" role="status">{hover.kind === "node" ? <><strong>{hover.item.label}</strong> · {hover.item.type} · {hover.item.community}<br /><span className="text-slate-500">{hover.item.id} · size {fmt(hover.item.size)}</span></> : <><strong>{hover.item.type}</strong> · {hover.item.source} → {hover.item.target}<br /><span className="text-slate-500">weight {fmt(hover.item.weight)}{hover.item.state ? ` · ${hover.item.state}` : ""}</span></>}</div>}
     </div>
-    {selectedNode && <div className="flex flex-wrap items-center gap-2 px-2 text-[11px] text-slate-400"><span>Selected: {selectedNode.label}{Array.isArray(selectedNode.row.domain_memberships) ? ` · Domains: ${selectedNode.row.domain_memberships.join(", ")}` : ""}</span><select className={`${control} max-w-48`} aria-label="Highlight path to node" value={pathTarget} onChange={event => setPathTarget(event.target.value)}><option value="">Highlight path to…</option>{visible.nodes.filter(node => node.id !== selected).map(node => <option key={node.id} value={node.id}>{node.label}</option>)}</select>{pathTarget && <span>{computedPath.length ? `${computedPath.length - 1} hops (undirected)` : "No path in current view"}</span>}</div>}
+    {selectedNode && <div className="flex flex-wrap items-center gap-2 px-2 text-[11px] text-slate-400"><span>Selected: {selectedNode.label}{Array.isArray(selectedNode.row.domain_memberships) ? ` · Domains: ${selectedNode.row.domain_memberships.join(", ")}` : ""}</span><select className={`${control} max-w-48`} aria-label="Highlight path to node" value={pathTarget} onChange={event => setPathTarget(event.target.value)}><option value="">Highlight path to…</option>{visible.nodes.filter(node => node.id !== selected).map(node => <option key={node.id} value={node.id}>{node.label}</option>)}</select>{pathTarget && <span>{computedPath.length ? `${computedPath.length - 1} hops (${panel.display.directed_path === true ? "directed" : "undirected"})` : "No path in current view"}</span>}</div>}
     <details className="px-2 pb-1 text-[11px] text-slate-400">
       <summary className="cursor-pointer">Legend · {showRegions ? `${boundaries.length} regions · ${regionSource}` : "boundaries hidden"}</summary>
       <div className="mt-1 flex max-h-20 flex-wrap gap-x-3 gap-y-1 overflow-y-auto" aria-label="Node color legend">

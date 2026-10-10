@@ -88,3 +88,9 @@ Presets 與個人變體分離。這是單使用者本機工具，未提供帳號
 ## 未實作的整合
 
 沒有 Atlas／Vault adapter、自動讀取 Vault、Atlas 匯出／匯入或資料上傳精靈。現有 WebSocket provider 接收 bounded 完整 snapshots，不是事件級增量合併或增量 graph/layout 引擎。新增領域 package 仍需重建前端。隨附 server 維持 Python 本機持久化；本專案不包含託管 demo 的 worker、雲端資料庫或部署資源。
+
+## AEP telemetry extension (2026-10-10)
+
+The data-only `applications/aep_harness` package uses an application-scoped `AepProvider`, registered by DashboardPage only for that application. JSONL, REST and WebSocket feed the same bounded event reducer under `web/src/platform/aep`. No AEP source/configuration or dashboard backend routes change. See AEP_TELEMETRY_INTEGRATION.md for the verified transport contract and limits.
+
+Nested timeline rendering is opt-in with `display.nested`; graph path direction is opt-in with `display.directed_path`. Existing flat timelines and undirected paths keep their behavior. Added components reuse existing dashboard controls and renderer interfaces. Full build/browser validation remains pending; see HANDOFF.md.

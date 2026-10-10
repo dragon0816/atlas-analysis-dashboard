@@ -1,3 +1,4 @@
+import { NestedTimeline } from '../aep/NestedTimeline';
 import { useMemo } from "react";
 import type { PanelRendererProps, Row, TabularDataset } from "../../platform/types";
 import { chartMarks, chartSlices, timelineEvents } from "../../platform/simpleChartModel";
@@ -10,6 +11,7 @@ export function SupplementalPanel(props: PanelRendererProps) {
   return <TableSupplement {...props} dataset={props.dataset} />;
 }
 function TableSupplement({ dataset, panel, onEvent }: PanelRendererProps & { dataset: TabularDataset }) {
+  if (panel.type === "timeline" && panel.display.nested === true) return <NestedTimeline dataset={dataset} panel={panel} onEvent={onEvent} />;
   const activate = (row: Row, values: Row = {}) => onEvent?.({ entity: "mark", values: { ...row, ...values } });
   if (panel.type === "text") {
     const text = typeof panel.display.text === "string" ? panel.display.text : dataset.rows.map(row => String(row[panel.mapping.text ?? panel.mapping.value ?? "text"] ?? "")).join("\n\n");
@@ -60,7 +62,8 @@ function PieView({ dataset, panel, onEvent }: PanelRendererProps & { dataset: Ta
       {shown.map((slice, i) => {
         const start = angle, sweep = slice.value / total * Math.PI * 2; angle += sweep;
         const end = angle, color = SERIES_COLORS[i] ?? "#94a3b8";
-        const activate = () => onEvent?.({ entity: "mark", values: { ...slice.row, category: slice.label, value: slice.value } });
+        if (panel.type === "timeline" && panel.display.nested === true) return <NestedTimeline dataset={dataset} panel={panel} onEvent={onEvent} />;
+  const activate = () => onEvent?.({ entity: "mark", values: { ...slice.row, category: slice.label, value: slice.value } });
         const d = sweep >= Math.PI * 2 - 1e-8 ? `M${cx},${cy - radius} A${radius},${radius} 0 1,1 ${cx},${cy + radius} A${radius},${radius} 0 1,1 ${cx},${cy - radius} Z` : `M${cx},${cy} L${cx + Math.cos(start) * radius},${cy + Math.sin(start) * radius} A${radius},${radius} 0 ${sweep > Math.PI ? 1 : 0},1 ${cx + Math.cos(end) * radius},${cy + Math.sin(end) * radius} Z`;
         return <path key={i} d={d} fill={color} stroke="#0f172a" strokeWidth={2} role="button" tabIndex={0} aria-label={`${slice.label}: ${fmt(slice.value)}`} onClick={activate} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } }} className="cursor-pointer focus:stroke-white"><title>{`${slice.label}: ${fmt(slice.value)} (${fmt(slice.value / total * 100, 3)}%)`}</title></path>;
       })}

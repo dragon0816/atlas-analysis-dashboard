@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { applicationPackages } from "../platform/applications";
+import { AepProvider } from '../platform/aep/provider';
+import { AepControls } from '../components/aep/AepControls';
 import { PlatformRuntime } from "../platform/runtime";
 import { PANEL_LIBRARY } from "../platform/catalog";
 import { nextPanelLayout, settlePanels } from "../platform/layout";
@@ -68,7 +70,8 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
   const [saveName, setSaveName] = useState("");
   const [settings, setSettings] = useState(false);
   const [highlight, setHighlight] = useState<string[]>([]);
-  const runtime = useMemo(() => application ? new PlatformRuntime(application, { variableDefinitions: () => boardRef.current?.variables ?? [] }) : null, [application]);
+  const aepProvider = useMemo(() => application?.id === 'aep_harness' ? new AepProvider() : null, [application]);
+  const runtime = useMemo(() => application ? new PlatformRuntime(application, { providers: aepProvider ? { aep: aepProvider } : {}, variableDefinitions: () => boardRef.current?.variables ?? [] }) : null, [application]);
   useEffect(() => retain(runtime), [runtime]);
   const dirty = editing && (!!newOrigin || (!!checkpoint && (JSON.stringify(board) !== JSON.stringify(checkpoint) || JSON.stringify(values) !== JSON.stringify(checkpointValues))));
   useEffect(() => { onDirtyChange?.(dirty); return () => onDirtyChange?.(false); }, [dirty, onDirtyChange]);
@@ -188,6 +191,7 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
       <div className="atlas-filter-summary" aria-label="Active filters" aria-live="polite">{activeFilters.length ? activeFilters.map(filter => <span className="atlas-filter-chip" key={filter.id} title={`${filter.label}: ${filter.summary}`}>{filter.label}: {filter.summary}</span>) : <span className="atlas-filter-empty">All data</span>}</div>
       <button className="atlas-button subtle atlas-reset-filters" disabled={busy} onClick={() => { setValues(defaults(board)); setHighlight([]); }}>Reset filters</button>
     </div>
+    {aepProvider && <AepControls key={appId} provider={aepProvider} setTimeRange={range => setValues(prev => ({ ...prev, time_range: range, run_id: "" }))} refresh={() => { runtime?.invalidate(); setRefreshKey(v => v + 1); }} />}
     <div id="atlas-dashboard-controls" className="atlas-source-bar" hidden={!controls.dashboards} role="region" aria-label="Dashboard selection"><Field label="Application"><select className="atlas-control" disabled={busy} value={appId} onChange={e => chooseApp(e.target.value)}>{applications.map(app => <option key={app.id} value={app.id}>{app.name}</option>)}</select></Field><Field label="Default preset"><select className="atlas-control" disabled={busy} value={application.dashboards.some(d => d.id === board.id) ? board.id : ""} onChange={e => choosePreset(e.target.value)}><option value="" disabled>User dashboard</option>{application.dashboards.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}</select></Field><Field label="Saved dashboard"><select className="atlas-control" disabled={busy} value={savedName} onChange={e => void openSaved(e.target.value)}><option value="">Open a saved view…</option>{names.map(name => <option key={name}>{name}</option>)}</select></Field><button className="atlas-button" disabled={busy} onClick={restoreDefault}>Restore default</button></div>
     <div id="atlas-filter-controls" className="atlas-variables" hidden={!controls.filters} inert={busy} role="region" aria-label="Dashboard filters">{board.variables.map(variable => <VariableControl key={variable.id} variable={variable} value={values[variable.id] ?? ""} onChange={value => setValues(prev => ({ ...prev, [variable.id]: value }))} />)}</div>
     {status && <div className="atlas-status" role="status"><span>{status}</span><button aria-label="Dismiss status" onClick={() => setStatus("")}>×</button></div>}{applicationPackages.errors.length > 0 && <div className="atlas-status">Some application packages could not load: {applicationPackages.errors.join("; ")}</div>}

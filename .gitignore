@@ -13,3 +13,4 @@ __pycache__/
 .coverage
 .pytest_cache/
 .local-data/
+web/.npm-cache/

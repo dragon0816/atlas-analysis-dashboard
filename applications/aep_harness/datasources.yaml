@@ -1,0 +1,56 @@
+aep.runs:
+  type: custom
+  provider: aep
+  label: AEP runs
+  query: {view: runs, strategy: $strategy, status: $status, model: $model, skill: $skill, kind: $kind, time_range: $time_range}
+aep.events:
+  type: custom
+  provider: aep
+  label: AEP run events
+  query: {view: events, run_id: $run_id, strategy: $strategy, status: $status, model: $model, skill: $skill, kind: $kind, time_range: $time_range}
+aep.spans:
+  type: custom
+  provider: aep
+  label: AEP span tree
+  query: {view: spans, run_id: $run_id, strategy: $strategy, status: $status, model: $model, skill: $skill, kind: $kind, time_range: $time_range}
+aep.transitions:
+  type: custom
+  provider: aep
+  format: graph
+  label: AEP directed transitions
+  query: {view: transitions, run_id: $run_id, strategy: $strategy, status: $status, model: $model, skill: $skill, kind: $kind, time_range: $time_range}
+aep.states:
+  type: custom
+  provider: aep
+  label: AEP state metrics
+  query: {view: state_metrics, run_id: $run_id, strategy: $strategy, status: $status, model: $model, skill: $skill, kind: $kind, time_range: $time_range}
+aep.strategies:
+  type: custom
+  provider: aep
+  label: AEP strategy metrics
+  query: {view: strategy_metrics, strategy: $strategy, status: $status, model: $model, skill: $skill, kind: $kind, time_range: $time_range}
+aep.benchmark_runs:
+  type: custom
+  provider: aep
+  label: AEP benchmark runs
+  query: {view: benchmark_runs, suite: $suite, strategy: $strategy, time_range: $time_range}
+aep.benchmark_cases:
+  type: custom
+  provider: aep
+  label: AEP benchmark cases
+  query: {view: benchmark_cases, suite: $suite, strategy: $strategy, benchmark_run: $benchmark_run, verdict: $verdict, time_range: $time_range}
+aep.benchmark_matrix:
+  type: custom
+  provider: aep
+  label: AEP benchmark case x run matrix
+  query: {view: benchmark_matrix, suite: $suite, strategy: $strategy, verdict: $verdict, time_range: $time_range}
+aep.trace_runs:
+  type: custom
+  provider: aep
+  label: AEP runs of the selected benchmark case
+  query: {view: runs, trace: $trace}
+aep.trace_spans:
+  type: custom
+  provider: aep
+  label: AEP span tree of the selected case run
+  query: {view: spans, trace: $trace, run_id: $run_id}

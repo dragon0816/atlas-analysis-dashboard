@@ -193,10 +193,10 @@ export function graphNeighborhood(model: GraphModel, id: string): Set<string> {
 }
 
 /** Paths follow adjacency in either direction, matching the undirected neighborhood view. */
-export function shortestGraphPath(model: GraphModel, from: string, to: string): string[] {
+export function shortestGraphPath(model: GraphModel, from: string, to: string, directed = false): string[] {
   const adjacency = new Map(model.nodes.map(node => [node.id, [] as string[]]));
   if (!adjacency.has(from) || !adjacency.has(to)) return [];
-  for (const edge of model.edges) { adjacency.get(edge.source)?.push(edge.target); adjacency.get(edge.target)?.push(edge.source); }
+  for (const edge of model.edges) { adjacency.get(edge.source)?.push(edge.target); if (!directed) adjacency.get(edge.target)?.push(edge.source); }
   const previous = new Map<string, string | null>([[from, null]]), queue = [from];
   for (let i = 0; i < queue.length; i++) {
     const id = queue[i];
@@ -210,8 +210,8 @@ export function shortestGraphPath(model: GraphModel, from: string, to: string): 
   return [];
 }
 
-export function graphPathEdges(model: GraphModel, path: readonly string[]): Set<string> {
-  const pairs = new Set(path.slice(1).flatMap((id, i) => [JSON.stringify([path[i], id]), JSON.stringify([id, path[i]])]));
+export function graphPathEdges(model: GraphModel, path: readonly string[], directed = false): Set<string> {
+  const pairs = new Set(path.slice(1).flatMap((id, i) => directed ? [JSON.stringify([path[i], id])] : [JSON.stringify([path[i], id]), JSON.stringify([id, path[i]])]));
   return new Set(model.edges.filter(edge => pairs.has(JSON.stringify([edge.source, edge.target]))).map(edge => edge.id));
 }
 export function graphNodeValues(node: GraphNode): Row { return { ...node.row, id: node.id, label: node.label, group: node.group, type: node.type, community: node.community }; }

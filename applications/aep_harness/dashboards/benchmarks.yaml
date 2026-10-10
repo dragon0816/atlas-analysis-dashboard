@@ -1,0 +1,69 @@
+schemaVersion: 2
+id: aep-benchmarks
+presetId: aep-benchmarks
+title: AEP Benchmarks
+applicationId: aep_harness
+description: Benchmark progress and verdicts from AEP telemetry (contract v0.3 §3a). Empty time range reads the last 7 days. Select a benchmark run, then a case to see the AEP runs that answered it. Verdicts are the benchmark's own; coverage comes from knowledge_v1 reference grading.
+variables:
+- {id: suite, label: Suite, options: [knowledge_v1, coding_v1, business_workflow_lab]}
+- {id: benchmark_run, label: Benchmark run}
+- {id: strategy, label: Strategy}
+- {id: verdict, label: Verdict, options: [PASS, FAIL, INSUFFICIENT_KNOWLEDGE, NEEDS_HUMAN_REVIEW, SYSTEM_ERROR, BLOCKED]}
+- {id: trace, label: Case trace}
+- {id: run_id, label: Selected AEP run}
+- {id: time_range, label: Time range, type: time_range}
+panels:
+- id: bench-runs
+  title: Benchmark runs — progress, pass rate, mean coverage; select a row
+  type: table
+  datasource: {id: aep.benchmark_runs}
+  transform: []
+  mapping: {}
+  display: {}
+  interaction:
+    on_click:
+      action: set_filter
+      values: {benchmark_run: $benchmark_run_id}
+  layout: {x: 0, y: 0, w: 12, h: 7}
+- id: bench-matrix
+  title: Case x run — 1 PASS, 0.5 insufficient or review, 0 otherwise
+  type: heatmap
+  datasource: {id: aep.benchmark_matrix}
+  transform: []
+  mapping: {x: run, y: case_id, value: score}
+  display: {show_values: false}
+  interaction: {on_click: {action: open_details}}
+  layout: {x: 0, y: 7, w: 6, h: 10}
+- id: bench-cases
+  title: Cases — select a row to load the AEP runs that answered it
+  type: table
+  datasource: {id: aep.benchmark_cases}
+  transform: []
+  mapping: {}
+  display: {}
+  interaction:
+    on_click:
+      action: set_filter
+      values: {trace: $aep_trace_id}
+  layout: {x: 6, y: 7, w: 6, h: 10}
+- id: bench-trace-runs
+  title: AEP runs of the selected case — select a row for its timeline
+  type: table
+  datasource: {id: aep.trace_runs}
+  transform: []
+  mapping: {}
+  display: {}
+  interaction:
+    on_click:
+      action: set_filter
+      values: {run_id: $run_id}
+  layout: {x: 0, y: 17, w: 6, h: 8}
+- id: bench-trace-spans
+  title: Span timeline of the selected AEP run
+  type: timeline
+  datasource: {id: aep.trace_spans}
+  transform: []
+  mapping: {start: start, end: end, label: label, parent: parent_span_id, depth: depth}
+  display: {nested: true}
+  interaction: {on_click: {action: open_details}}
+  layout: {x: 6, y: 17, w: 6, h: 8}

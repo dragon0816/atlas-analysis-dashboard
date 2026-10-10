@@ -1,0 +1,71 @@
+schemaVersion: 2
+id: aep-harness-overview
+presetId: aep-harness-overview
+title: AEP Harness Telemetry
+applicationId: aep_harness
+description: Select a run to inspect its events. Empty time range reads the last 24 hours. Metrics use producer durations and loaded events; comparisons are observational, not benchmark accuracy.
+variables:
+- {id: run_id, label: Selected run}
+- {id: strategy, label: Strategy}
+- {id: status, label: Status, options: [started, succeeded, failed, skipped, cancelled]}
+- {id: model, label: Model}
+- {id: skill, label: Skill}
+- {id: kind, label: Run kind, options: [conversation_turn, workflow_run, knowledge_query, coding_change, capability_call]}
+- {id: time_range, label: Time range, type: time_range}
+panels:
+- id: aep-runs
+  title: Runs — select a row to inspect
+  type: table
+  datasource: {id: aep.runs}
+  transform: []
+  mapping: {}
+  display: {}
+  interaction:
+    on_click:
+      action: set_filter
+      values: {run_id: $run_id}
+  layout: {x: 0, y: 0, w: 12, h: 8}
+- id: aep-spans
+  title: Span timeline — open spans have no inferred end
+  type: timeline
+  datasource: {id: aep.spans}
+  transform: []
+  mapping: {start: start, end: end, label: label, parent: parent_span_id, depth: depth}
+  display: {nested: true}
+  interaction: {on_click: {action: open_details}}
+  layout: {x: 0, y: 8, w: 6, h: 10}
+- id: aep-transitions
+  title: Directed state transitions
+  type: network
+  datasource: {id: aep.transitions}
+  transform: []
+  mapping: {nodeId: id, nodeLabel: label, edgeSource: source, edgeTarget: target, edgeWeight: weight}
+  display: {directed: true, directed_path: true}
+  interaction: {on_click: {action: open_details}}
+  layout: {x: 6, y: 8, w: 6, h: 10}
+- id: aep-states
+  title: State dwell time — sum of measured ms
+  type: heatmap
+  datasource: {id: aep.states}
+  transform: []
+  mapping: {x: strategy_id, y: state, value: dwell_ms}
+  display: {show_values: true}
+  interaction: {on_click: {action: open_details}}
+  layout: {x: 0, y: 18, w: 6, h: 8}
+- id: aep-strategies
+  title: Strategy cohorts — p50/p95 measured ms, sample counts
+  type: table
+  datasource: {id: aep.strategies}
+  transform: []
+  mapping: {}
+  display: {}
+  layout: {x: 6, y: 18, w: 6, h: 8}
+- id: aep-events
+  title: Canonical events — select a row for details
+  type: table
+  datasource: {id: aep.events}
+  transform: []
+  mapping: {}
+  display: {}
+  interaction: {on_click: {action: open_details}}
+  layout: {x: 0, y: 26, w: 12, h: 9}
