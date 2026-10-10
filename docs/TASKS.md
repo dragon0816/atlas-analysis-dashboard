@@ -26,3 +26,4 @@ Overall status: implemented but NOT done under the project's definition of done;
 - [x] Live shell check against AEP `d29ac63` with a one-question benchmark and its grading.
 - [ ] Browser acceptance of the Benchmarks dashboard, including Live during a running benchmark.
 - [x] User approved committing Codex's integration and Claude Code's benchmark additions together.
+- [x] Windows backend tests on Python 3.13.15: 35 tests OK, 7 platform skips (Claude Code, 2026-10-10).

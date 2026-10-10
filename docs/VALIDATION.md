@@ -89,3 +89,9 @@
 ## 2026-10-10 — Combined integration commit verification
 
 User authorized committing the Atlas integration and Claude Code benchmark additions together. Reran full npm test: 112 passed, zero failures/skips. npm run build passed TypeScript and Vite (166 modules); existing chunk-size warnings remain. No implementation changes were made during commit preparation. Windows Python 3.13 backend tests and real browser acceptance remain pending, so this is a checkpoint commit, not full acceptance. No AEP modifications or push. Temporary provider patch is excluded.
+
+## 2026-10-10 — Windows backend tests on Python 3.13 (Claude Code)
+
+- Python 3.13.15 (Astral python-build-standalone via `uv python install 3.13`, user profile only, no system change), at repo root: `python -B -m unittest discover -s tests -p 'server*.py'` → 35 tests, OK, 7 skipped.
+- Skips are platform limits, not failures: five need Windows symlink privileges; `test_default_outside_source`, `test_hardlink_and_fifo_rejected` and `test_private_directory_and_files` cover POSIX-only behaviour (Windows uses LOCALAPPDATA and native ACLs).
+- The Python 3.13+ guard in `server/windows.py` was not changed. Python 3.12 is not a valid substitute: before 3.13, `mkdir(mode=0o700)` on Windows does not restrict the directory ACL.

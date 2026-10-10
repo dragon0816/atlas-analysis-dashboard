@@ -1,5 +1,11 @@
 # Handoff — AEP telemetry and benchmark integration (2026-10-10)
 
+## Status update (2026-10-10, Claude Code)
+
+- Windows backend tests now pass on Python 3.13.15: 35 tests OK, 7 platform skips (see VALIDATION.md). Interpreter: `C:/Users/Chi_L/AppData/Roaming/uv/python/cpython-3.13-windows-x86_64-none/python.exe` (installed with `uv python install 3.13`).
+- Committed as e59655d (Codex) plus this documentation update. Not pushed.
+- **Only remaining item: real browser acceptance** of the AEP Harness and AEP Benchmarks dashboards, including Live during a running benchmark. It needs the owner at the computer.
+
 ## Goal and scope
 
 Connect local AEP telemetry and benchmark results to Atlas. The user authorized committing the combined Atlas changes after Claude Code's handoff. This task only modifies and commits Atlas; it does not modify AEP or push either repository.
