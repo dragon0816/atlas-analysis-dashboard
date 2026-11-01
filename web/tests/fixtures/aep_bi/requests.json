@@ -1,0 +1,136 @@
+{
+  "format": "aep.bi.analysis_feed/v1",
+  "vault": "feed-fixture",
+  "computed_at": "2026-11-01T09:30:00+08:00",
+  "note": "Requests in order on a fresh PC that joined tests/fixtures/bi_feed/vault; default results are computed first (as on publish); after_queue: the queued results were computed before this request. Built by scripts/bi_feed_fixtures.py.",
+  "requests": [
+    {
+      "file": "health.json",
+      "method": "GET",
+      "url": "/api/v1/bi/health",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "vaults.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "analyses.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "result-node-coverage.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/node-coverage/result",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "result-node-coverage-domain-wireless.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/node-coverage/result?domain=wireless",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "result-accounts-by-region.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/accounts-by-region/result",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "result-accounts-by-region-domain-AIDC.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/accounts-by-region/result?domain=AIDC",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "result-tech-updates.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/tech-updates/result",
+      "origin": null,
+      "status": 200,
+      "after_queue": false
+    },
+    {
+      "file": "error-result_not_ready.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/tech-updates/result?domain=wireless",
+      "origin": null,
+      "status": 409,
+      "after_queue": false
+    },
+    {
+      "file": "result-tech-updates-domain-wireless.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/tech-updates/result?domain=wireless",
+      "origin": null,
+      "status": 200,
+      "after_queue": true
+    },
+    {
+      "file": "error-param_invalid.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/accounts-by-region/result?domain=space",
+      "origin": null,
+      "status": 400,
+      "after_queue": false
+    },
+    {
+      "file": "error-param_unknown.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/accounts-by-region/result?region=TW",
+      "origin": null,
+      "status": 400,
+      "after_queue": false
+    },
+    {
+      "file": "error-analysis_unknown.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/feed-fixture/analyses/draft-only/result",
+      "origin": null,
+      "status": 404,
+      "after_queue": false
+    },
+    {
+      "file": "error-vault_unknown.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults/no-such-vault/analyses",
+      "origin": null,
+      "status": 404,
+      "after_queue": false
+    },
+    {
+      "file": "error-route_unknown.json",
+      "method": "GET",
+      "url": "/api/v1/bi/nothing-here",
+      "origin": null,
+      "status": 404,
+      "after_queue": false
+    },
+    {
+      "file": "error-origin_refused.json",
+      "method": "GET",
+      "url": "/api/v1/bi/vaults",
+      "origin": "https://example.com",
+      "status": 403,
+      "after_queue": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "slug": "node-coverage",
+  "digest": "0532fdd1c95420d0",
+  "version": {
+    "tag": "v1",
+    "commit": "d12ba36d9b4d64c5d844ea3dde0ca80cdae305bb0129885d5fa94ab7147fe03c"
+  },
+  "params": {
+    "domain": "wireless"
+  },
+  "columns": [
+    "node",
+    "solutions",
+    "level"
+  ],
+  "rows": [
+    [
+      "Baseband Modem",
+      1,
+      "warning"
+    ],
+    [
+      "RF Front End",
+      2,
+      null
+    ]
+  ],
+  "truncated": false,
+  "computed_at": "2026-11-01T09:30:00+08:00"
+}

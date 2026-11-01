@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "code": "vault_unknown",
+  "message": "no vault 'no-such-vault' on this PC"
+}

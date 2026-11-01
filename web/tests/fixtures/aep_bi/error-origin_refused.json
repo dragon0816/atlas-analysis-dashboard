@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "code": "origin_refused",
+  "message": "the feed is read only by pages on this machine"
+}

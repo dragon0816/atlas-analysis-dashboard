@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "code": "param_invalid",
+  "message": "參數 domain 必須是 wireless、AIDC、robotics、mobile、aerospace 之一"
+}

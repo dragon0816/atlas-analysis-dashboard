@@ -1,0 +1,2 @@
+# Preserve producer golden bytes across Git checkouts on Windows.
+web/tests/fixtures/aep_bi/*.json -text

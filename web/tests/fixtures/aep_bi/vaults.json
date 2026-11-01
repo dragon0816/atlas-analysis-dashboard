@@ -1,0 +1,15 @@
+{
+  "vaults": [
+    {
+      "id": "feed-fixture",
+      "dataset": "vault-feed-fixture",
+      "title": "Feed Fixture Market (fictional)",
+      "purpose": "虛構資料：BI analysis feed 的契約測試",
+      "schema": "bi.schema/v1.1@2.0.0",
+      "reads": {
+        "tag": "v1",
+        "commit": "d12ba36d9b4d64c5d844ea3dde0ca80cdae305bb0129885d5fa94ab7147fe03c"
+      }
+    }
+  ]
+}

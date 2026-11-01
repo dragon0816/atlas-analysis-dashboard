@@ -1,0 +1,5 @@
+{
+  "ok": false,
+  "code": "result_not_ready",
+  "message": "this result is being computed; ask again in a moment"
+}

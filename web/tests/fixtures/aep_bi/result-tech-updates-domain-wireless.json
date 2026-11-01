@@ -1,0 +1,31 @@
+{
+  "slug": "tech-updates",
+  "digest": "01b3a2eca1ad22b4",
+  "version": {
+    "tag": "v1",
+    "commit": "d12ba36d9b4d64c5d844ea3dde0ca80cdae305bb0129885d5fa94ab7147fe03c"
+  },
+  "params": {
+    "domain": "wireless"
+  },
+  "columns": [
+    "month",
+    "technologies"
+  ],
+  "rows": [
+    [
+      "2026-07",
+      1
+    ],
+    [
+      "2026-08",
+      2
+    ],
+    [
+      "2026-10",
+      1
+    ]
+  ],
+  "truncated": false,
+  "computed_at": "2026-11-01T09:30:00+08:00"
+}
