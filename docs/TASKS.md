@@ -7,12 +7,13 @@
 - [x] Preliminary A1: read-only bounded provider, cancellation, exact-query stale cache, 409 waiting and bounded retry; synthetic consumer tests.
 - [x] Preliminary A2: application/vault controls, ordered panels, table/bar/line/scatter mapping, bool/date/text parameters, level counts, existing personal layout editor/storage, drift command.
 - [x] Enum checkpoint: npm test 123/123 and Python server tests 35 OK (7 platform skips). TypeScript/Vite build passed (173 modules); git diff --check passed. See VALIDATION.md.
-- [ ] A1: vendor and test F1 golden JSON. Blocked: producer golden directory absent in checkout and main on inspection.
+- [x] A1: vendor all 17 F1 JSON files verbatim from merged AEP main b6a139c5; golden consumer validation/rendering tests 17/17 and drift check pass.
 - [x] A2 enum controls: require params.<name>.values as a string array, render exactly those choices with the default selected, and test selection/disabled state and parameter mapping (2026-11-01 coordinator contract).
-- [ ] A1/A2 completion: producer drift check, golden-based consumer tests and final acceptance. Synthetic tests do not satisfy this.
-- [ ] I1: do not start until owner says F3 is on AEP main.
+- [x] A1/A2 fixture acceptance: golden-based consumer tests, all six I1 cases, npm test 141/141, TypeScript/Vite build, Python 35 tests OK (7 skipped), and drift check 17 files pass.
+- [ ] I2: owner-present real-vault publish/edit/publish acceptance (design §6.5); separate from completed fixture acceptance.
+- [x] I1: all six design §6.4 cases passed against merged AEP main b6a139c5 in isolated headless Edge; runner exit 0 and owned servers stopped. See HANDOFF.md and VALIDATION.md.
 
-Implementation is a preliminary working draft, not A1/A2 completion. See HANDOFF.md
+Producer golden and I1 acceptance are implemented. See HANDOFF.md
 and VALIDATION.md for validation and next actions. AEP remains read-only; no push.
 
 User authorized implementation on 2026-10-10. AEP checkout is read-only.

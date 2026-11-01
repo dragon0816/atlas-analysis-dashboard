@@ -95,3 +95,10 @@ test('BI enum parameters require resolved string choices and retain producer met
   variables[parameterId('counts', 'domain')] = 'wireless';
   assert.equal(resolveVariables(board.panels[0].query, variables).params.domain, 'wireless');
 });
+
+test('BI fixture port configuration keeps the fixed loopback host and validates port bounds', async () => {
+  const { biBase } = await import('../src/platform/aep/bi.ts');
+  assert.equal(biBase(), 'http://127.0.0.1:53583/api/v1/bi');
+  assert.equal(biBase('53611'), 'http://127.0.0.1:53611/api/v1/bi');
+  for (const value of ['0', '65536', '-1', '1.5', 'https://example.com', '53611/path', '']) assert.throws(() => biBase(value));
+});

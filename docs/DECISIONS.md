@@ -54,3 +54,20 @@ This supersedes the earlier enum prerequisite in the BI boundary decision above.
 The clarification is pending AEP main merge (b6a139c5), on AEP branch
 bi-analysis-dashboard-f1-f3, as confirmed by the coordinator.
 Golden vendoring and I1 remain deferred until the coordinator's F1–F3 notification.
+
+## 2026-11-01 — Producer goldens and headless BI integration
+
+AEP F1–F3 and the enum supplement are merged on AEP main at
+b6a139c5cfae4b21ac42c27f471e9b028e3679b1. Vendor every golden JSON byte-for-byte,
+including requests.json; record provenance in the adjacent README. The manifest
+must cover all responses, and tests validate provider states plus rendered controls,
+all table cells and numeric chart marks. Rejected: Atlas-authored substitute
+fixtures or normalizing producer data to satisfy tests.
+
+I1 uses the real AEP fixture process, Atlas Vite and an isolated headless browser.
+Use Node's built-in WebSocket/CDP support; no browser dependency or desktop GUI
+automation is added. VITE_AEP_BI_PORT sets only a validated loopback port at build
+or dev-server startup (default 53583, I1 53611). The host, GET-only behavior,
+credential omission and redirect rejection remain fixed. Rejected: intercepting
+or fabricating browser feed responses, arbitrary host configuration or a backend
+proxy. Evidence belongs in ignored .scratch/aep-bi-i1; stop all owned processes.

@@ -2,7 +2,12 @@ import { checkAbort, isRecord, MAX_BYTES, normalizeTable } from '../dataset.ts';
 import type { Row, SourceDefinition, TabularDataset } from '../types';
 import type { DatasetObserver, SourceProvider } from '../sources.ts';
 
-export const BI_BASE = 'http://127.0.0.1:53583/api/v1/bi';
+declare const __AEP_BI_PORT__: string | undefined;
+export function biBase(port = '53583') {
+  if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) throw new Error('Invalid AEP BI loopback port');
+  return `http://127.0.0.1:${Number(port)}/api/v1/bi`;
+}
+export const BI_BASE = biBase(typeof __AEP_BI_PORT__ === 'undefined' ? undefined : __AEP_BI_PORT__);
 export interface BiVersion extends Row { tag: string | null; commit: string }
 export interface BiVault extends Row { id: string; dataset: string; title: string; purpose: string; schema: string; reads: BiVersion }
 export interface BiParam extends Row { type: 'enum' | 'bool' | 'date' | 'text'; default: string | boolean | number | null; values_from?: string; values?: string[] }

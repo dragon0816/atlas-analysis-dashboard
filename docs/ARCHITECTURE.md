@@ -1,6 +1,6 @@
 # 架構與設定
 
-## AEP BI draft (2026-11-01)
+## AEP BI (2026-11-01)
 
 `applications/aep_bi` uses a dedicated `web/src/platform/aep/bi.ts` custom provider.
 `biDashboard.ts` maps published feed order/chart specs to standard schemaVersion 2
@@ -9,7 +9,7 @@ saved dashboard's panels/layout intact. The existing canvas, editing controls an
 personal dashboard persistence are reused. BI scatter adds series on one scale
 through an application-specific renderer; generic scatter behavior is unchanged.
 Raw responses retain additive keys. Results remain in bounded memory and never
-become application assets. Enum controls use only AEP-resolved params.<name>.values; values_from remains metadata. F1 golden validation is pending.
+become application assets. Enum controls use only AEP-resolved params.<name>.values; values_from remains metadata. All 17 producer goldens from merged AEP b6a139c5 are vendored and validated. I1 uses the actual fixture server and isolated headless Edge; VITE_AEP_BI_PORT configures only the fixed-loopback port.
 
 ## 目錄
 

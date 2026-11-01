@@ -1,55 +1,65 @@
-# Handoff — AEP BI enum checkpoint (2026-11-01)
+# Handoff — AEP BI producer integration (2026-11-01)
 
-## Goal and boundaries
+## Goal and scope
 
-Implement only coordinator step 1: resolved enum validation and controls in A1/A2,
-unit tests, full frontend/backend checks, documentation and a local commit.
+Complete coordinator step 2: vendor AEP F1 golden files, test A1 validation and A2
+rendering against every golden response, run I1 headless against the actual fixture
+server, run the full checks and commit coherent Atlas-only changes. No push or PR.
 AEP at C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform is read-only.
-Do not vendor golden files or start I1 until the coordinator confirms F1–F3 are on
-AEP main. Never push or open a PR. No AEP or user configuration files were edited.
+AEP F1–F3 and the enum contract are merged on main at
+b6a139c5cfae4b21ac42c27f471e9b028e3679b1 (verified locally).
 
-## Implemented
+## Completed implementation
 
-The worktree began with the uncommitted BI draft on baseline 8267f66. It includes
-the dedicated bounded GET-only provider, application package, vault/parameter
-controls, chart mapping, level counts, scatter series, personal-layout integration,
-and drift command. The provider uses an 8 MiB response/cache limit, 128 cache
-entries, eight-second timeout, cancellation, stale retention and bounded waiting
-retries. Synthetic tests cover these behaviors; they are not producer golden tests.
+- Previous checkpoint 81c86e1 added the bounded BI provider/application, vault and
+  enum/bool/date/text controls, chart mapping, level badges and personal layouts.
+- Golden/test commit ef20cd0 copied all 17 producer JSON files verbatim into
+  web/tests/fixtures/aep_bi/;
+  adjacent README records the source commit. Git attributes preserve their bytes.
+- New golden suite checks that requests.json covers every response, validates all
+  success/error/waiting payloads through A1, and checks A2 controls, table cells
+  and numeric chart marks. All 17 golden tests passed.
+- scripts/test-aep-bi-i1.mjs implements one-command I1 with the real AEP fixture
+  server, Atlas Vite and isolated headless Edge. It uses built-in Node CDP without
+  extra dependencies. VITE_AEP_BI_PORT changes only the fixed-loopback port;
+  default 53583, fixture 53611. See DECISIONS.md, 2026-11-01 producer integration.
+- LOCAL_DEVELOPMENT.md documents setup and npm run test:aep-bi:i1 from web/ with
+  AEP_REPO set. All owned servers/browser processes stop at completion. Confirmed
+  ports 53611 and 5179 are no longer listening. No Agent Web or desktop GUI tests.
 
-Enum parameters now require values as a string array. BiControls renders exactly
-those choices, selects the default, honors current/saved values and disabled state,
-and emits namespaced changes through the existing result-query path. Tests cover
-malformed/missing choices, metadata retention, default/change query mapping and
-rendered selection behavior. See DECISIONS.md, 2026-11-01 enum wire-format decision.
+## I1 verification
 
-## Contract and remaining work
+All six design §6.4 cases passed with exit code 0:
+1. Published vault title matches golden vaults.json.
+2. All three ordered panels match default golden table cells and chart marks;
+   gap=1 and warning=2 badges match coverage data.
+3. Changing accounts-by-region to AIDC makes a live request and renders TW=2, US=2.
+4. tech-updates domain=wireless displays 409 waiting, then the queued golden values.
+5. Stopping the fixture retains last AIDC data and displays stale/disconnected
+   health plus last-data-retained warnings.
+6. Non-local Origin receives 403 with exact error-origin_refused.json.
+Additional wireless coverage results and zero browser runtime exceptions checked.
+Ignored .scratch/aep-bi-i1 contains four screenshots, network.json and report.json.
+The first I1 run passed the cases but failed exit cleanup; fixed repeated waiting
+on an already signal-terminated child, then the complete run passed.
 
-The coordinator explicitly confirmed params.<name>.values as AEP-resolved choice
-strings alongside values_from. Atlas never resolves values_from. This contract is
-pending AEP main merge (b6a139c5), on branch bi-analysis-dashboard-f1-f3 in worktree
-C:/Users/Chi_L/.paseo/worktrees/2qnenase/sudden-mayfly, as the coordinator confirmed.
-It is not a spec gap; wait for the coordinator's merge notification.
+## Verification and continuity
 
-A1/A2 remain preliminary until producer golden vendoring, golden-based consumer
-tests, drift verification and acceptance pass. No golden JSON was added and no I1
-or live producer/browser acceptance was run. Existing Harness/Benchmarks browser
-acceptance remains pending independently.
+- npm test: 141 passed, 0 failed/cancelled/skipped; 143522.0012 ms.
+- npm run build: TypeScript/Vite passed, 173 modules, 15.11 seconds; chunk-size
+  warnings only.
+- Python server tests: 35 tests, OK (skipped=7), 23.045 seconds.
+- Final drift check: 17 files match. git diff --check passes.
+Exact commands and acceptance details are recorded in VALIDATION.md and TASKS.md.
+No golden/design mismatch or remaining AEP contract question was found. Initial
+sandbox esbuild restrictions required approved execution outside the sandbox.
+A golden UI test initially awaited file I/O inside a React effect mock; preloading
+fixtures and closing MessageChannels fixed the test harness without weakening it.
 
-## Verification
+## Remaining work
 
-- npm test: 123 passed, 0 failed/cancelled/skipped (153696.1751 ms).
-- npm run build: TypeScript and Vite passed, 173 modules, 33.48 seconds; existing
-  chunk-size warnings. First sandbox attempt failed on parent-directory access;
-  approved execution outside the sandbox passed.
-- Python 3.13 server suite: 35 tests, OK (skipped=7), 20.302 seconds.
-- git diff --check passed. No separate lint script exists.
-See VALIDATION.md for commands and limitations.
-
-## Next steps
-
-1. Wait for the coordinator's explicit F1–F3-on-main notification.
-2. Vendor producer golden JSON verbatim, verify the enum payload and add consumer
-   tests against it; run the drift command without changing the producer files.
-3. Rerun npm test, npm run build and Python server tests, then I1 only when released.
-4. Record final acceptance in TASKS.md/VALIDATION.md and refresh this handoff.
+The owner-present real-vault acceptance (design §6.5 / I2) is separate: publish a
+real AEP version, verify Atlas updates, then edit/publish an analysis and verify its
+new chart. Do not infer this from fixture acceptance. The earlier AEP Harness and
+Benchmarks real browser acceptance remains pending independently; see TASKS.md.
+No further BI fixture implementation is planned unless checks expose a regression.

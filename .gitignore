@@ -14,3 +14,6 @@ __pycache__/
 .pytest_cache/
 .local-data/
 web/.npm-cache/
+
+# Local headless acceptance evidence
+.scratch/

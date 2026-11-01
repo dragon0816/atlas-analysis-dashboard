@@ -114,3 +114,47 @@ User authorized committing the Atlas integration and Claude Code benchmark addit
 - Python 3.13 server suite at repo root: -B -m unittest discover -s tests -p 'server*.py': 35 tests, OK (skipped=7), 20.302 seconds.
 - The first npm run build passed TypeScript but Vite/esbuild could not read a parent directory under the filesystem sandbox. The same build passed with approved execution outside the sandbox: TypeScript passed; Vite 7.3.7 transformed 173 modules and built in 33.48 seconds. Existing >500 kB chunk warnings remain; no code/test weakening or dependency changes.
 - Producer golden vendoring/drift acceptance and I1 deliberately deferred pending the coordinator's F1–F3-on-main notification. The enum contract is pending AEP main merge (b6a139c5), not an unresolved specification question.
+
+## 2026-11-01 — AEP BI producer golden and I1 acceptance
+
+Producer: merged AEP main b6a139c5cfae4b21ac42c27f471e9b028e3679b1.
+All 17 JSON files were copied verbatim and Git attributes preserve their bytes.
+The golden suite passed 17/17: requests.json coverage, health/vault/catalog
+validation and controls, every result's table cells or numeric chart marks,
+and all error/waiting states. No producer/design mismatch was found.
+
+I1 command from web/ (requires Node 24, AEP interpreter, installed Edge and free
+ports 53611/5179; see LOCAL_DEVELOPMENT.md):
+
+```powershell
+$env:AEP_REPO = 'C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform'
+npm.cmd run test:aep-bi:i1
+```
+
+Final I1 exit 0, 6/6 cases passed against the real fixture server:
+
+| Design §6.4 case | Verified outcome |
+| --- | --- |
+| Vault list | Golden published fictional vault title offered |
+| Every panel | All three panels in feed order; every golden default table cell/bar mark/line point; gap=1, warning=2 |
+| Parameter refetch | Live domain=AIDC request; accounts TW=2, US=2; wireless coverage also checked |
+| result_not_ready | Actual 409 displayed as waiting, then bounded retry obtained wireless tech golden result |
+| Stop AEP | Last AIDC data retained with stale/disconnected health and last-data-retained warnings |
+| Non-local Origin | 403 with exact error-origin_refused.json |
+
+Zero browser runtime exceptions. Four screenshots, observed requests and JSON
+report are in ignored .scratch/aep-bi-i1/. Ports 53611 and 5179 confirmed stopped.
+No Agent Web or GUI desktop tests ran. The fixture script ran with AEP cwd and
+bytecode writes disabled; no producer source/configuration/fixtures were modified.
+The first I1 run passed cases but failed cleanup on an already stopped child;
+that cleanup was fixed and the full I1 rerun passed. Initial golden UI tests needed
+fixture preloading and MessageChannel cleanup; no assertions were weakened.
+
+- npm run build: TypeScript passed, Vite 7.3.7 built 173 modules in 15.11 seconds;
+  existing >500 kB chunk warnings remain.
+- Python 3.13: -B -m unittest discover -s tests -p 'server*.py': 35 tests,
+  OK (skipped=7), 23.045 seconds.
+- npm run check:aep-bi -- --aep <AEP repo>: 17 files match after I1/full checks.
+- Owner-present real-vault acceptance (§6.5/I2) remains a separate pending task.
+- Final npm test: 141 passed, 0 failed/cancelled/skipped, 143522.0012 ms.
+- git diff --check passed. No separate lint script exists; build checks TypeScript.
