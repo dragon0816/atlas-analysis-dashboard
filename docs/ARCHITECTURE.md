@@ -5,7 +5,7 @@
 `applications/aep_bi` uses a dedicated `web/src/platform/aep/bi.ts` custom provider.
 `biDashboard.ts` maps published feed order/chart specs to standard schemaVersion 2
 panels and namespaced variables. `BiControls` reads vault/catalog data and keeps a
-saved dashboard's panels/layout intact. The existing canvas, editing controls and
+saved dashboard's personal layout intact. Every 15 seconds it compares /vaults reads with the catalog version and reconciles changed analysis digests by slug; Reload also reconciles. Producer chart/title/question/params refresh while positions, sizes and valid current params remain. New slugs append and removed slugs are pruned. The existing canvas, editing controls and
 personal dashboard persistence are reused. BI scatter adds series on one scale
 through an application-specific renderer; generic scatter behavior is unchanged.
 Raw responses retain additive keys. Results remain in bounded memory and never

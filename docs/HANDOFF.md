@@ -1,65 +1,69 @@
-# Handoff — AEP BI producer integration (2026-11-01)
+# Handoff — AEP BI published catalog reconciliation (2026-11-01)
 
 ## Goal and scope
 
-Complete coordinator step 2: vendor AEP F1 golden files, test A1 validation and A2
-rendering against every golden response, run I1 headless against the actual fixture
-server, run the full checks and commit coherent Atlas-only changes. No push or PR.
-AEP at C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform is read-only.
-AEP F1–F3 and the enum contract are merged on main at
-b6a139c5cfae4b21ac42c27f471e9b028e3679b1 (verified locally).
+Fix the I2 rehearsal regression: after AEP publishes an edited analysis, Atlas
+must update its chart/title/question/parameter controls as well as rows, without
+requiring vault reselection or losing personal layout and valid current values.
+The coordinator will rerun the real Agent Web rehearsal against this branch.
+AEP is read-only. No push, PR, producer source or golden edits are authorized.
 
-## Completed implementation
+## Implemented
 
-- Previous checkpoint 81c86e1 added the bounded BI provider/application, vault and
-  enum/bool/date/text controls, chart mapping, level badges and personal layouts.
-- Golden/test commit ef20cd0 copied all 17 producer JSON files verbatim into
-  web/tests/fixtures/aep_bi/;
-  adjacent README records the source commit. Git attributes preserve their bytes.
-- New golden suite checks that requests.json covers every response, validates all
-  success/error/waiting payloads through A1, and checks A2 controls, table cells
-  and numeric chart marks. All 17 golden tests passed.
-- scripts/test-aep-bi-i1.mjs implements one-command I1 with the real AEP fixture
-  server, Atlas Vite and isolated headless Edge. It uses built-in Node CDP without
-  extra dependencies. VITE_AEP_BI_PORT changes only the fixed-loopback port;
-  default 53583, fixture 53611. See DECISIONS.md, 2026-11-01 producer integration.
-- LOCAL_DEVELOPMENT.md documents setup and npm run test:aep-bi:i1 from web/ with
-  AEP_REPO set. All owned servers/browser processes stop at completion. Confirmed
-  ports 53611 and 5179 are no longer listening. No Agent Web or desktop GUI tests.
+- Verified root cause: BiControls only loaded analyses on selection/Reload and
+  applied panels only to an empty board; the provider polled only result rows.
+- BiControls now polls health + /vaults every 15 seconds and compares selected
+  reads {tag, commit} with the loaded catalog version. A difference triggers
+  /analyses and reconciliation. Reload, board load and returning from edit/save
+  also fetch/reconcile. Timers and in-flight reads abort on switch/unmount.
+- biDashboard.ts reconciles by vault/slug and stored query.digest. Changed digests
+  update type, mapping, title, question and parameter definitions. Panel IDs,
+  layout, transforms and appearance survive. Current valid parameter values
+  survive; invalid values use the new default. Removed params/slugs lose their
+  associated variables/values. New slugs append in feed order below existing
+  panels. Unchanged digests preserve the existing panel object references.
+- Query digest is Atlas metadata, not an HTTP parameter. Including it in runtime
+  query identity causes a refetch when an analysis changes. Question metadata is
+  shown in the panel-header tooltip. No dashboard schema change or autosave.
+- DashboardPage uses a reconciliation callback that preserves saved name/revision
+  and preview state. Empty saved boards also retain identity/title and use the
+  normal initial layout; explicit vault selection still creates a fresh view.
+- Added six reconciliation unit cases: changed digest, unchanged digest, added,
+  removed, invalid enum/current params, empty saved-board identity.
+- Extended scripts/test-aep-bi-i1.mjs: after all real fixture cases, an Atlas-only
+  local HTTP stub publishes v2 (bar→line, new title/question/mapping/enum choices),
+  then v3 via Reload (line→bar). Assertions check actual rendered marks, controls,
+  fallback value and unchanged geometry. AEP and golden files remain untouched.
 
-## I1 verification
+## Decisions
 
-All six design §6.4 cases passed with exit code 0:
-1. Published vault title matches golden vaults.json.
-2. All three ordered panels match default golden table cells and chart marks;
-   gap=1 and warning=2 badges match coverage data.
-3. Changing accounts-by-region to AIDC makes a live request and renders TW=2, US=2.
-4. tech-updates domain=wireless displays 409 waiting, then the queued golden values.
-5. Stopping the fixture retains last AIDC data and displays stale/disconnected
-   health plus last-data-retained warnings.
-6. Non-local Origin receives 403 with exact error-origin_refused.json.
-Additional wireless coverage results and zero browser runtime exceptions checked.
-Ignored .scratch/aep-bi-i1 contains four screenshots, network.json and report.json.
-The first I1 run passed the cases but failed exit cleanup; fixed repeated waiting
-on an already signal-terminated child, then the complete run passed.
+See DECISIONS.md, 2026-11-01 published analysis reconciliation. The coordinator
+allows vault-version or result-version detection; vault polling also detects
+added/removed analyses without any live result subscriptions. Reconciliation is
+paused during editing/saving to protect local edits and resumes with a fresh load.
 
-## Verification and continuity
+## Verification and evidence
 
-- npm test: 141 passed, 0 failed/cancelled/skipped; 143522.0012 ms.
-- npm run build: TypeScript/Vite passed, 173 modules, 15.11 seconds; chunk-size
-  warnings only.
-- Python server tests: 35 tests, OK (skipped=7), 23.045 seconds.
-- Final drift check: 17 files match. git diff --check passes.
-Exact commands and acceptance details are recorded in VALIDATION.md and TASKS.md.
-No golden/design mismatch or remaining AEP contract question was found. Initial
-sandbox esbuild restrictions required approved execution outside the sandbox.
-A golden UI test initially awaited file I/O inside a React effect mock; preloading
-fixtures and closing MessageChannels fixed the test harness without weakening it.
+- npm test: 147 passed, 0 failed/cancelled/skipped; 132252.8646 ms.
+- npm run build: TypeScript/Vite passed, 173 modules, 14.21 s; existing chunk-size warnings.
+- Python server tests: 35 tests, OK (skipped=7), 14.967 s.
+- Drift check: all 17 files match. git diff --check passed.
+- Final I1 exit 0: six real fixture cases plus published-version stub passed;
+  ports 53611/5179 confirmed stopped.
+Commands and evidence details are recorded in VALIDATION.md and TASKS.md. All golden JSON remains producer-owned and byte-exact.
+The first I1 attempt timed out in CDP Page.navigate before any acceptance case;
+a separate run after build completed passed without relaxing test conditions.
+Ignored .scratch/aep-bi-i1 contains screenshots, observed requests and report.json.
+No Agent Web or desktop GUI tests were run by this Atlas worker.
 
-## Remaining work
+## Next steps
 
-The owner-present real-vault acceptance (design §6.5 / I2) is separate: publish a
-real AEP version, verify Atlas updates, then edit/publish an analysis and verify its
-new chart. Do not infer this from fixture acceptance. The earlier AEP Harness and
-Benchmarks real browser acceptance remains pending independently; see TASKS.md.
-No further BI fixture implementation is planned unless checks expose a regression.
+1. Coordinator reruns the real Agent Web throwaway-vault publish rehearsal, using
+   VITE_AEP_BI_PORT=53621 (or its chosen loopback port) when starting Atlas.
+2. Confirm a real v2 publish updates chart/title/params without vault reselection,
+   with personal geometry and valid values retained. Owner-present §6.5/I2 remains
+   pending until that rehearsal/acceptance is confirmed; the local stub does not
+   replace it.
+3. Record any new findings and final I2 acceptance in TASKS.md/VALIDATION.md.
+The earlier Harness/Benchmarks browser acceptance remains independent and pending.
+Prior checkpoints: 81c86e1 (BI), ef20cd0 (goldens), bc8efda (original I1 runner).

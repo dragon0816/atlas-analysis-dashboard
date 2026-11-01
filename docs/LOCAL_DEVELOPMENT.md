@@ -6,7 +6,7 @@ Expand Dashboards, choose AEP BI in Application, then choose a published vault.
 The default read-only endpoint is http://127.0.0.1:53583/api/v1/bi. Set
 VITE_AEP_BI_PORT before starting Vite or building to use a different loopback port.
 Only numeric ports 1–65535 are accepted; the host remains 127.0.0.1.
-Enum controls offer exactly AEP-resolved values. Bool/date/text parameters also
+Catalog metadata updates automatically when /vaults reads changes (15-second polling), and Reload vaults also reconciles it. Editing/saving pauses reconciliation until preview resumes. Enum controls offer exactly AEP-resolved values. Bool/date/text parameters also
 refetch results. Move/resize and keyboard Layout properties use the existing editor;
 Save As stores only a personal Atlas dashboard.
 
@@ -30,7 +30,7 @@ Chromium executable. Keep ports 53611 (fixture) and 5179 (Atlas) free. The runne
 starts AEP's fixture script with cwd=AEP_REPO and bytecode writes disabled, Vite with
 VITE_AEP_BI_PORT=53611, and an isolated headless browser. It never starts Agent Web
 or desktop GUI tests. It checks all six design §6.4 cases and stops its processes.
-Screenshots, observed feed requests and report.json are in ignored
+After the real fixture cases, an Atlas-only local HTTP stub serves republished versions to verify automatic catalog reconciliation and manual Reload without changing AEP files. Screenshots, observed feed requests and report.json are in ignored
 .scratch/aep-bi-i1/. A failed run also writes failure-dom.txt and failure.png.
 This fixture acceptance is separate from the owner-present real-vault acceptance.
 

@@ -94,7 +94,7 @@ function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, on
   return <div ref={card} className="atlas-panel-inner"><header className={`atlas-panel-header ${editing ? "is-editing" : ""}`}>
     {editing && <button type="button" className="atlas-drag" onPointerDown={onMove} title="Drag panel. Use Layout properties for keyboard control." aria-label={`Move ${panel.title}`}>⠿</button>}
     {editing && <button type="button" className="atlas-button atlas-panel-remove" aria-label={`Remove ${panel.title}`} onClick={event => { event.stopPropagation(); onRemove(); }}>Remove</button>}
-    <h2 title={panel.title}>{panel.title}</h2><span className="atlas-panel-type">{panel.type === "network" ? "GRAPH" : panel.type.toUpperCase()}</span>
+    <h2 title={[panel.title, panel.display.aepBiQuestion].filter(Boolean).join("\n")}>{panel.title}</h2><span className="atlas-panel-type">{panel.type === "network" ? "GRAPH" : panel.type.toUpperCase()}</span>
     <button type="button" className="atlas-icon-button" title="Refresh panel" aria-label={`Refresh ${panel.title}`} onClick={() => setLocalRefresh(k => k + 1)}>↻</button>
     <button type="button" className={`atlas-icon-button ${showData ? "text-sky-300" : ""}`} title="Inspect dataset" aria-label={`Data for ${panel.title}`} onClick={() => setShowData(v => !v)}>▤</button>
     <button type="button" className="atlas-icon-button" title="Fullscreen" aria-label={`Fullscreen ${panel.title}`} onClick={fullscreen}>⛶</button>

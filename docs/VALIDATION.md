@@ -158,3 +158,38 @@ fixture preloading and MessageChannel cleanup; no assertions were weakened.
 - Owner-present real-vault acceptance (§6.5/I2) remains a separate pending task.
 - Final npm test: 141 passed, 0 failed/cancelled/skipped, 143522.0012 ms.
 - git diff --check passed. No separate lint script exists; build checks TypeScript.
+
+## 2026-11-01 — Published analysis catalog reconciliation
+
+Reproduced the I2 gap in the code: result polling updated rows while BiControls
+never reconciled an already populated board. Catalog polling now compares
+/vaults reads with /analyses version every 15 seconds; changed digests update
+producer-owned panel metadata/params in place. Reload also reconciles. Tests cover
+changed/unchanged digests, added/removed slugs, invalid enum fallback, personal
+geometry/transforms/appearance and empty saved-board identity.
+
+Final headless command from web/:
+
+```powershell
+$env:AEP_REPO = 'C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform'
+npm.cmd run test:aep-bi:i1
+```
+
+Exit 0: all six real fixture cases pass, followed by the Atlas-only HTTP stub
+republish test. Automatic v2 changes bar→line, title/question, x mapping and enum
+choices; invalid AIDC selection falls back to wireless. Manual Reload applies
+v3 line→bar. Actual chart marks and preserved panel geometry are asserted. The
+stub changes no AEP file or golden JSON. Screenshot 05-republished.png, network.json
+and report.json are in ignored .scratch/aep-bi-i1. Ports 53611/5179 confirmed stopped.
+The first attempt timed out in CDP Page.navigate before any acceptance case; two
+later standalone I1 runs passed, including the final empty-board implementation.
+No assertion or timeout was relaxed. Real Agent Web I2 rehearsal remains for the
+coordinator; this is not a substitute for owner-present §6.5 acceptance.
+
+- Final npm run build: TypeScript passed; Vite 7.3.7 built 173 modules in 14.21 s;
+  existing >500 kB chunk warnings only.
+- Python 3.13: -B -m unittest discover -s tests -p 'server*.py': 35 tests,
+  OK (skipped=7), 14.967 s.
+- npm run check:aep-bi -- --aep <AEP main>: all 17 producer files match.
+- git diff --check passed. No new dependency, AEP edit or golden edit.
+- Final npm test: 147 passed, 0 failed/cancelled/skipped; 132252.8646 ms.

@@ -1,31 +1,51 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AepBiProvider, BiCatalog, BiVault } from '../../platform/aep/bi';
-import { biDashboard, parameterId } from '../../platform/aep/biDashboard';
+import { biDashboard, parameterId, reconcileBiDashboard } from '../../platform/aep/biDashboard';
 import type { DashboardDocument, VariableValues } from '../../platform/types';
 
-export function BiControls({ provider, board, values, disabled, onBoard, onValue }: { provider: AepBiProvider; board: DashboardDocument; values: VariableValues; disabled: boolean; onBoard: (board: DashboardDocument) => void; onValue: (id: string, value: string | boolean) => void }) {
+export function BiControls({ provider, board, values, disabled, onBoard, onReconcile, onValue }: { provider: AepBiProvider; board: DashboardDocument; values: VariableValues; disabled: boolean; onBoard: (board: DashboardDocument) => void; onReconcile?: (board: DashboardDocument) => void; onValue: (id: string, value: string | boolean) => void }) {
   const [vaults, setVaults] = useState<BiVault[]>([]), [catalog, setCatalog] = useState<BiCatalog>(), [message, setMessage] = useState('Loading AEP BI…');
   const [reload, setReload] = useState(0), [loading, setLoading] = useState(false);
   const selected = String(values['bi:vault'] ?? board.panels[0]?.query?.vault ?? '');
   const boardCallback = useRef(onBoard); boardCallback.current = onBoard;
+  const current = useRef({ board, values, onReconcile }); current.current = { board, values, onReconcile };
   useEffect(() => {
+    if (disabled) return;
     const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined, known: BiCatalog | undefined;
+    setCatalog(previous => previous?.vault === selected ? previous : undefined);
     const load = async () => {
       setLoading(true);
       try {
         const health = await provider.health(controller.signal);
+        if (controller.signal.aborted) return;
         if (health.state !== 'ready') { setMessage(`AEP BI ${health.state}: ${health.message}`); return; }
-        const result = await provider.vaults(controller.signal); setVaults(result.data?.vaults ?? []);
-        if (!selected) { setMessage(result.state === 'ready' ? 'Choose a published vault.' : `AEP BI ${result.state}: ${result.message}`); return; }
-        const next = await provider.analyses(selected, controller.signal); setCatalog(next.data);
-        setMessage(next.state === 'ready' ? 'Published analyses · read only' : `AEP BI ${next.state}: ${next.message}`);
-        // A saved personal dashboard owns its panels and layout. Explicit selection generates a new view.
-        if (next.data && !board.panels.length) boardCallback.current(biDashboard(next.data));
+        const result = await provider.vaults(controller.signal);
+        if (controller.signal.aborted) return;
+        if (result.data) setVaults(result.data.vaults);
+        if (result.state !== 'ready') { setMessage(`AEP BI ${result.state}: ${result.message}`); return; }
+        if (!selected) { setMessage('Choose a published vault.'); return; }
+        const published = result.data?.vaults.find(vault => vault.id === selected)?.reads;
+        if (!known || !published || published.tag !== known.version.tag || published.commit !== known.version.commit) {
+          const next = await provider.analyses(selected, controller.signal);
+          if (controller.signal.aborted) return;
+          setMessage(next.state === 'ready' ? 'Published analyses · read only' : `AEP BI ${next.state}: ${next.message}`);
+          if (next.state !== 'ready' || !next.data) return;
+          known = next.data;
+          const latest = current.current;
+          if (latest.onReconcile) {
+            const reconciled = reconcileBiDashboard(latest.board, latest.values, known);
+            if (reconciled !== latest.board) latest.onReconcile(reconciled);
+          } else if (!latest.board.panels.length) boardCallback.current(biDashboard(known));
+          setCatalog(known);
+        } else setMessage('Published analyses · read only');
       } catch (ex) { if (!controller.signal.aborted) setMessage(String(ex)); }
-      finally { if (!controller.signal.aborted) setLoading(false); }
+      finally {
+        if (!controller.signal.aborted) { setLoading(false); timer = setTimeout(() => void load(), 15000); }
+      }
     };
-    void load(); return () => controller.abort();
-  }, [provider, selected, reload]);
+    void load(); return () => { controller.abort(); clearTimeout(timer); };
+  }, [provider, selected, reload, disabled, board.id]);
   return <section className="atlas-source-bar" aria-label="AEP BI controls">
     <label>Vault <select className="atlas-control" value={selected} disabled={disabled || loading} onChange={event => {
       const vault = event.target.value;

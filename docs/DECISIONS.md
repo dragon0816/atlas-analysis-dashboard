@@ -71,3 +71,38 @@ or dev-server startup (default 53583, I1 53611). The host, GET-only behavior,
 credential omission and redirect rejection remain fixed. Rejected: intercepting
 or fabricating browser feed responses, arbitrary host configuration or a backend
 proxy. Evidence belongs in ignored .scratch/aep-bi-i1; stop all owned processes.
+
+## 2026-11-01 — Reconcile republished BI analyses without resetting personal layouts
+
+The I2 rehearsal exposed that result polling refreshed rows while a non-empty
+board kept its old catalog chart/title. BiControls now polls health and /vaults
+serially every 15 seconds, compares the selected vault's reads tag/commit with the
+last loaded catalog version, and refetches /analyses when different. Initial load,
+board/vault changes and Reload vaults also fetch and reconcile the catalog. The
+coordinator permits either vault-version or result-version detection; use vault
+polling so additions/removals are detected even without a result subscription.
+Abort in-flight reads and clear the timer on switching/unmount. Pause reconciliation
+while editing or saving, then load the current catalog when preview resumes.
+
+Reconcile producer panels by query.vault + query.slug. Store the analysis digest
+in query.digest (consumer metadata, never a feed query parameter) so a changed
+digest both updates the panel and invalidates its runtime query identity. Update
+type/mapping/title/question and parameter definitions only for changed digests.
+Keep panel identity, position/size, transforms, appearance and unrelated panels.
+Keep current parameter values when valid under the new type/choices, otherwise
+use the new default. Remove obsolete variables/values with their analysis/params.
+Append missing published slugs in feed order below existing panels; unchanged
+digests preserve the original panel references. Questions are kept in display
+metadata and the panel header tooltip. No dashboard schema version change.
+
+Use a separate reconciliation callback in DashboardPage to update board/values
+without resetting its saved name/revision, layout or other preview state. Do not
+autosave to Atlas or write to AEP. Legacy saved panels without a digest refresh
+on their first catalog load. Rejected: regenerating the whole board on every
+poll, relying only on result polling, requiring vault reselection, or editing
+producer fixtures. I1 adds a temporary Atlas-only HTTP stub after the real fixture
+cases to verify automatic and manual republish updates in the actual browser.
+
+Empty saved boards use the same reconciliation callback and retain dashboard
+identity/title and saved revision. When no panels exist, initial placement uses
+the normal generated layout; additions to non-empty boards append below them.

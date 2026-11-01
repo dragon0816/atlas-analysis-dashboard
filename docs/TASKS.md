@@ -10,6 +10,9 @@
 - [x] A1: vendor all 17 F1 JSON files verbatim from merged AEP main b6a139c5; golden consumer validation/rendering tests 17/17 and drift check pass.
 - [x] A2 enum controls: require params.<name>.values as a string array, render exactly those choices with the default selected, and test selection/disabled state and parameter mapping (2026-11-01 coordinator contract).
 - [x] A1/A2 fixture acceptance: golden-based consumer tests, all six I1 cases, npm test 141/141, TypeScript/Vite build, Python 35 tests OK (7 skipped), and drift check 17 files pass.
+- [x] I2 rehearsal fix: reconcile published catalog changes by slug/digest using 15-second vault-version polling and manual Reload; preserve layouts/current valid params; unit coverage for changed/unchanged/added/removed/invalid enum and empty saved-board identity cases.
+- [x] Extend I1 with an Atlas-only two-version HTTP stub: automatic bar→line/title/question/mapping/enum fallback, manual Reload line→bar, stable geometry; actual browser acceptance passed.
+- [x] Republish fix final checks: npm test 147/147; TypeScript/Vite build (173 modules); Python 35 tests OK (7 skipped); drift 17 files match; I1 six fixture cases + republish stub pass; git diff --check passes.
 - [ ] I2: owner-present real-vault publish/edit/publish acceptance (design §6.5); separate from completed fixture acceptance.
 - [x] I1: all six design §6.4 cases passed against merged AEP main b6a139c5 in isolated headless Edge; runner exit 0 and owned servers stopped. See HANDOFF.md and VALIDATION.md.
 

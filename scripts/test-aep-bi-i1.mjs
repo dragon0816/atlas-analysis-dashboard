@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { readFile, writeFile, mkdir, mkdtemp, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -17,7 +18,7 @@ const fixtures = resolve(root, 'web/tests/fixtures/aep_bi');
 const golden = async name => JSON.parse(await readFile(resolve(fixtures, name), 'utf8'));
 const catalog = await golden('analyses.json');
 const results = [], children = [];
-let socket, send, evaluate;
+let socket, send, evaluate, republishServer;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, label, timeout = 30000) {
   const end = Date.now() + timeout;
@@ -129,12 +130,67 @@ try {
   await screenshot('04-offline');
   assert.deepEqual(exceptions, []);
   await writeFile(resolve(scratch, 'network.json'), JSON.stringify(network, null, 2));
-  console.log('I1: 6/6 cases passed');
+  // Atlas-only, golden-shaped two-version stub: never modify AEP or its goldens.
+  let revision = 1;
+  const health = await golden('health.json'), vaults = await golden('vaults.json');
+  const defaults = Object.fromEntries(await Promise.all(catalog.order.map(async slug => [slug, await golden(`result-${slug}.json`)])));
+  republishServer = createServer((request, response) => {
+    const url = new URL(request.url, 'http://127.0.0.1:53611');
+    const version = revision === 1 ? catalog.version : { tag: `stub-v${revision}`, commit: `stub-commit-${revision}` };
+    const listing = structuredClone(catalog); listing.version = version;
+    if (revision > 1) {
+      const analysis = listing.analyses.find(a => a.slug === 'accounts-by-region');
+      analysis.digest = `stub-digest-${revision}`; analysis.title = `Republished accounts ${revision}`;
+      analysis.question = `Republished question ${revision}`;
+      analysis.chart = { type: revision === 2 ? 'line' : 'bar', x: 'month', y: 'accounts' };
+      analysis.params.domain = { type: 'enum', default: 'wireless', values: ['wireless', 'mobile'] };
+    }
+    let data;
+    if (url.pathname.endsWith('/health')) data = health;
+    else if (url.pathname.endsWith('/vaults')) { data = structuredClone(vaults); data.vaults[0].reads = version; }
+    else if (url.pathname.endsWith('/analyses')) data = listing;
+    else {
+      const slug = decodeURIComponent(url.pathname.split('/').at(-2));
+      data = structuredClone(defaults[slug]);
+      if (!data) { response.writeHead(404); response.end(); return; }
+      data.version = version;
+      if (revision > 1 && slug === 'accounts-by-region') {
+        data.digest = `stub-digest-${revision}`; data.columns = ['month', 'accounts']; data.rows = [['2026-10', 8], ['2026-11', 12]];
+      }
+      data.params.domain = url.searchParams.get('domain') ?? listing.analyses.find(a => a.slug === slug).params.domain.default;
+    }
+    response.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': 'http://127.0.0.1:5179' }); response.end(JSON.stringify(data));
+  });
+  await new Promise((resolve, reject) => { republishServer.once('error', reject); republishServer.listen(53611, '127.0.0.1', resolve); });
+  await evaluate(`document.querySelector('[aria-label="AEP BI controls"] button').click()`);
+  await until(() => evaluate(`document.querySelector('[aria-label="AEP BI controls"]').textContent.includes('Published analyses')`), 'stub recovery');
+  const geometry = await evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region'))}).getAttribute('style')`);
+  revision = 2;
+  await until(() => evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region') + ' h2')}).textContent === 'Republished accounts 2'`), 'automatic published catalog reconcile', 35000);
+  await until(async () => (await panelData('accounts-by-region'))?.marks.some(mark => mark.includes('2026-11: 12')), 'republished rows rendered');
+  const revised = await panelData('accounts-by-region');
+  assert.ok(revised.marks.some(mark => mark.includes('2026-10: 8'))); assert.ok(revised.marks.some(mark => mark.includes('2026-11: 12')));
+  assert.equal(await evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region') + ' [data-panel-kind]')}).getAttribute('data-panel-kind')`), 'line');
+  assert.equal(await evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region') + ' h2')}).title`), 'Republished accounts 2\nRepublished question 2');
+  assert.equal(await evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region'))}).getAttribute('style')`), geometry);
+  const choice = await evaluate(`(() => { const label=[...document.querySelectorAll('[aria-label="AEP BI controls"] label')].find(l=>l.textContent.startsWith('Republished accounts 2')); const el=label.querySelector('select'); return {value:el.value,choices:[...el.options].map(o=>o.value)}; })()`);
+  assert.deepEqual(choice, { value: 'wireless', choices: ['wireless', 'mobile'] });
+  await screenshot('05-republished');
+  revision = 3;
+  await evaluate(`document.querySelector('[aria-label="AEP BI controls"] button').click()`);
+  await until(() => evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region') + ' h2')}).textContent === 'Republished accounts 3'`), 'manual reload reconcile');
+  assert.equal(await evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region') + ' [data-panel-kind]')}).getAttribute('data-panel-kind')`), 'bar');
+  assert.equal(await evaluate(`document.querySelector(${JSON.stringify(panelSelector('accounts-by-region'))}).getAttribute('style')`), geometry);
+  pass('published catalog reconciliation', 'Atlas-only stub: automatic v2 bar→line/title/question/mapping/enum fallback; manual reload v3 line→bar; geometry retained');
+  assert.deepEqual(exceptions, []);
+  await writeFile(resolve(scratch, 'network.json'), JSON.stringify(network, null, 2));
+  console.log('I1: 6/6 fixture cases and published-version stub passed');
 } catch (error) {
   if (send) { await screenshot('failure').catch(() => {}); await writeFile(resolve(scratch, 'failure-dom.txt'), String(await evaluate('document.body.innerText').catch(() => 'unavailable'))); }
   results.push({ name: 'I1', outcome: 'failed', evidence: error.stack });
   console.error(error.stack); process.exitCode = 1;
 } finally {
+  if (republishServer) { republishServer.closeAllConnections(); await new Promise(resolve => republishServer.close(resolve)); }
   if (send && socket?.readyState === WebSocket.OPEN) await send('Browser.close').catch(() => {});
   socket?.close();
   for (const child of children.reverse()) await stop(child).catch(() => {});

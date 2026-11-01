@@ -102,3 +102,71 @@ test('BI fixture port configuration keeps the fixed loopback host and validates 
   assert.equal(biBase('53611'), 'http://127.0.0.1:53611/api/v1/bi');
   for (const value of ['0', '65536', '-1', '1.5', 'https://example.com', '53611/path', '']) assert.throws(() => biBase(value));
 });
+
+const republished = (changes = {}) => ({ ...catalog, version: { tag: 'v2', commit: 'next-commit' }, ...changes });
+const domainAnalysis = { ...analysis, params: { domain: { type: 'enum', default: 'robotics', values: ['robotics', 'wireless'] } } };
+test('BI reconciliation updates changed digest metadata in place and retains valid user values', async () => {
+  const { reconcileBiDashboard } = await import('../src/platform/aep/biDashboard.ts');
+  const original = biDashboard({ ...catalog, analyses: [domainAnalysis] });
+  original.panels[0].layout = { x: 3, y: 7, w: 8, h: 11 };
+  original.panels[0].display.fillColor = '#123456';
+  original.panels[0].transform = [{ op: 'limit', count: 10 }];
+  const next = republished({ analyses: [{ ...domainAnalysis, digest: 'new-digest', title: 'New title', question: 'New question', chart: { type: 'line', x: 'month', y: 'count' } }] });
+  const id = parameterId('counts', 'domain');
+  const result = reconcileBiDashboard(original, { ...original.values, [id]: 'wireless' }, next);
+  assert.equal(result.panels[0].type, 'line'); assert.equal(result.panels[0].title, 'New title');
+  assert.equal(result.panels[0].display.aepBiQuestion, 'New question');
+  assert.deepEqual(result.panels[0].mapping, { x: 'month', y: 'count' });
+  assert.equal(result.panels[0].query.digest, 'new-digest');
+  assert.strictEqual(result.panels[0].layout, original.panels[0].layout);
+  assert.strictEqual(result.panels[0].transform, original.panels[0].transform);
+  assert.equal(result.panels[0].display.fillColor, '#123456');
+  assert.equal(result.values[id], 'wireless'); assert.equal(result.id, original.id);
+  assert.equal(original.panels[0].type, 'bar');
+});
+test('BI reconciliation leaves unchanged digests and personal layout references untouched', async () => {
+  const { reconcileBiDashboard } = await import('../src/platform/aep/biDashboard.ts');
+  const original = biDashboard(catalog);
+  assert.strictEqual(reconcileBiDashboard(original, original.values, republished()), original);
+});
+test('BI reconciliation appends added slugs in feed order below personal panels', async () => {
+  const { reconcileBiDashboard } = await import('../src/platform/aep/biDashboard.ts');
+  const original = biDashboard(catalog); original.panels[0].layout.y = 12;
+  const next = republished({ order: ['second', 'counts', 'third'], analyses: [analysis, { ...analysis, slug: 'third' }, { ...analysis, slug: 'second' }] });
+  const result = reconcileBiDashboard(original, original.values, next);
+  assert.deepEqual(result.panels.map(panel => panel.query.slug), ['counts', 'second', 'third']);
+  assert.strictEqual(result.panels[0], original.panels[0]);
+  assert.equal(result.panels[1].layout.y, 20); assert.equal(result.panels[2].layout.y, 28);
+});
+test('BI reconciliation removes missing slugs and their parameters while retaining unrelated panels', async () => {
+  const { reconcileBiDashboard } = await import('../src/platform/aep/biDashboard.ts');
+  const original = biDashboard(catalog), id = parameterId('counts', 'include_sample');
+  const personal = { ...original.panels[0], id: 'personal', datasource: { id: 'other' } };
+  original.panels.push(personal); original.variables.push({ id: 'personal-filter', default: 'kept' });
+  const result = reconcileBiDashboard(original, { ...original.values, [id]: true, 'personal-filter': 'kept' }, republished({ order: [], analyses: [] }));
+  assert.deepEqual(result.panels, [personal]); assert.strictEqual(result.panels[0], personal);
+  assert.equal(result.values[id], undefined); assert.equal(result.values['personal-filter'], 'kept');
+  assert.deepEqual(result.variables, [{ id: 'personal-filter', default: 'kept' }]);
+});
+test('BI reconciliation falls back to new enum default and updates added/removed parameter controls', async () => {
+  const { reconcileBiDashboard } = await import('../src/platform/aep/biDashboard.ts');
+  const original = biDashboard({ ...catalog, analyses: [domainAnalysis] });
+  const id = parameterId('counts', 'domain');
+  const next = republished({ analyses: [{ ...domainAnalysis, digest: 'new', params: { domain: { type: 'enum', default: 'mobile', values: ['mobile'] }, sample: { type: 'bool', default: true } } }] });
+  const result = reconcileBiDashboard(original, { ...original.values, [id]: 'wireless' }, next);
+  assert.equal(result.values[id], 'mobile'); assert.equal(result.values[parameterId('counts', 'sample')], true);
+  assert.equal(result.variables.find(v => v.id === id).default, 'mobile');
+  assert.deepEqual(Object.keys(result.panels[0].query.params), ['domain', 'sample']);
+  const removed = reconcileBiDashboard(result, result.values, republished({ analyses: [{ ...domainAnalysis, digest: 'last', params: {} }] }));
+  assert.deepEqual(removed.variables, []); assert.equal(removed.values[id], undefined);
+});
+
+
+test('BI reconciliation populates an empty saved board without replacing its identity', async () => {
+  const { reconcileBiDashboard } = await import('../src/platform/aep/biDashboard.ts');
+  const original = { schemaVersion: 2, id: 'saved-empty', title: 'Personal board', applicationId: 'aep_bi', variables: [], values: { 'bi:vault': 'fixture' }, panels: [] };
+  const next = { ...catalog, order: ['counts', 'second'], analyses: [analysis, { ...analysis, slug: 'second' }] };
+  const result = reconcileBiDashboard(original, original.values, next);
+  assert.equal(result.id, 'saved-empty'); assert.equal(result.title, 'Personal board');
+  assert.deepEqual(result.panels.map(panel => panel.layout), biDashboard(next).panels.map(panel => panel.layout));
+});

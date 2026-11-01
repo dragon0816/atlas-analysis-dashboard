@@ -8,7 +8,7 @@ The AEP checkout is read-only. I1 must wait for the owner's explicit notificatio
 that F3 is on AEP main, even if a fixture server appears before that notification.
 The coordinator confirmed F1–F3 merged on AEP main b6a139c5 on 2026-11-01; I1 is authorized. Do not change the feed contract in Atlas. Vendor producer F1 golden JSON verbatim.
 Atlas owns personal layouts only; existing server persistence is reused.
-The coordinator confirmed enum params.<name>.values as resolved string choices on 2026-11-01. Atlas offers exactly these choices and never resolves values_from.
+The coordinator confirmed enum params.<name>.values as resolved string choices on 2026-11-01. Atlas offers exactly these choices and never resolves values_from. Published-version changes and Reload must reconcile chart/title/question/params by slug/digest, preserving personal geometry and valid current values, appending new analyses and removing retired ones.
 
 Implement the sequence authorized on 2026-10-10: contract, bounded offline ingestion, REST runs/detail views, nested timeline and directed transitions with metrics, then live ingestion.
 
