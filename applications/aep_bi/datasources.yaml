@@ -1,0 +1,4 @@
+aep.bi.result:
+  type: custom
+  provider: aep_bi
+  label: Published analysis result

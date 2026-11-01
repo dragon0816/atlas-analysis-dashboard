@@ -1,0 +1,7 @@
+id: aep_bi
+name: AEP BI
+description: Read-only published BI analyses from local AEP.
+demo: false
+datasources: datasources.yaml
+dashboards:
+  - dashboards/overview.yaml

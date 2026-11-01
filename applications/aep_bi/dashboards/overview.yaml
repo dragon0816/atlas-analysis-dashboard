@@ -1,0 +1,7 @@
+schemaVersion: 2
+id: aep-bi-overview
+title: AEP BI
+applicationId: aep_bi
+description: Choose a published BI vault to load its analyses.
+variables: []
+panels: []

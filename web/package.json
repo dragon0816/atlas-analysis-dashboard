@@ -5,6 +5,7 @@
   "description": "Standalone configurable analysis dashboards",
   "type": "module",
   "scripts": {
+    "check:aep-bi": "node ../scripts/check-aep-bi.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "test": "node --experimental-strip-types --test tests/*.test.mjs"

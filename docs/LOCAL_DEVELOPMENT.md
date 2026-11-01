@@ -1,5 +1,27 @@
 # 本機執行、開發與驗收
 
+## AEP BI draft
+
+After building Atlas, choose **AEP BI** in the Application selector (expand
+Dashboards), then choose a vault. The provider reads only
+`http://127.0.0.1:53583/api/v1/bi`. Edit Dashboard enables the existing move/resize
+canvas and keyboard Layout properties; Save As writes a personal Atlas dashboard.
+No request writes to AEP. Bool/date/text parameters refetch the affected analysis.
+Enum choices await an AEP contract clarification and are currently disabled.
+
+Run from `web/`:
+
+```powershell
+npm.cmd test
+npm.cmd run build
+npm.cmd run check:aep-bi -- --aep C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform
+```
+
+The drift check must fail while F1 is absent. Once F1 is available, copy its JSON
+files verbatim into `web/tests/fixtures/aep_bi/`, add golden consumer coverage and
+rerun all checks. Do not run I1 or start the AEP fixture server until the owner
+explicitly confirms F3 is on main. I1 command documentation will be added in I1.
+
 先跑內附 synthetic applications，確認 dashboard 本身正常，再依 [AEP 整合交接](AEP_TELEMETRY_INTEGRATION.md) 接本機 telemetry。本 repo 不包含 AEP host、正式 traces 或 API credentials。AEP adapter 已加入但完整驗證尚未完成，請先讀 docs/HANDOFF.md。
 
 ## 1. 環境與版本

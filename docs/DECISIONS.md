@@ -19,3 +19,38 @@ AEP health is polled every 15 seconds in live mode to detect store cursor resets
 ## 2026-10-10 — AEP benchmark views (Claude Code)
 
 Benchmark views load benchmark runs by kind and then each run's events, instead of filtering the host-wide event window. Reason: the 24-hour Harness window already reaches the 10,000-event bound on the owner's host, which would silently drop benchmark events. Verdicts and coverage are shown exactly as AEP's benchmark and grader produced them; Atlas computes only counts, rates and means. A case links to its AEP runs through `aep_trace_ids` and `GET /runs?trace_id=`. Rejected: a separate Atlas application (it would duplicate the AEP provider registration and change the application count tests), and a server-side Atlas proxy (AEP already serves loopback reads).
+
+## 2026-11-01 — AEP BI consumer boundary and prerequisite gate
+
+Use a separate application-scoped `AepBiProvider` and `applications/aep_bi`.
+Keep the telemetry provider and dashboard schemaVersion 2 unchanged. GET-only
+loopback reads use the existing Agent Web port, no credentials, no redirects,
+an 8 MiB streamed limit and 8-second timeout. Cache exact parameterized requests
+in memory only (128 entries and 8 MiB total); preserve stale data on disconnect.
+Retry waiting results at most three times per subscription, then require refresh.
+Reuse the Atlas canvas/editor and dashboard storage for personal layouts.
+Rejected: generic REST envelope changes, AEP writes, a backend proxy, new packages,
+or storing result data in personal dashboard JSON.
+
+F1 is absent from the inspected AEP checkout and main. Synthetic consumer examples
+may support preliminary implementation but never substitute for producer golden
+fixtures. Enum choices remain disabled until AEP defines their wire format; do
+not invent a `values`/`options` key. F1 vendoring and a passing drift check are
+required before A1/A2 completion. I1 remains gated on the owner's F3 notification.
+
+## 2026-11-01 — AEP BI enum wire format
+
+The coordinator confirmed that every enum parameter in GET /vaults/{id}/analyses
+includes params.<name>.values, an array of choice strings resolved by AEP, alongside
+values_from. Validate values as a bounded string array (20,000 entries under the
+existing 8 MiB response limit); retain values_from and additive metadata unchanged.
+Render exactly values in a labeled native select, initially selecting the default
+and honoring saved/current values and the dashboard disabled state. Changes use
+the existing namespaced variable and result-query path.
+
+Rejected: resolving values_from in Atlas, inventing an options key, adding choices
+from defaults, or retaining the disabled placeholder. AEP owns choice resolution.
+This supersedes the earlier enum prerequisite in the BI boundary decision above.
+The clarification is pending AEP main merge (b6a139c5), on AEP branch
+bi-analysis-dashboard-f1-f3, as confirmed by the coordinator.
+Golden vendoring and I1 remain deferred until the coordinator's F1–F3 notification.

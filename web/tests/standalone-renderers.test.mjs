@@ -24,6 +24,17 @@ await build({ stdin: { contents: `export { DatasetPanel } from './src/components
 const { DatasetPanel, linearScale, createElement, act, createRoot, renderToStaticMarkup } = (await import(pathToFileURL(join(directory, 'renderers.cjs')).href)).default;
 const markup = (dataset, specification) => renderToStaticMarkup(createElement(DatasetPanel, { dataset, panel: specification }));
 
+test('BI waiting avoids chart errors, level badges are explicit, scatter retains series', () => {
+  const waiting = table([], []); waiting.meta.warnings = ['AEP BI waiting: result_not_ready'];
+  const waitingMarkup = markup(waiting, panel('bar', { category: 'domain', value: 'count' }, { aepBi: true }));
+  assert.match(waitingMarkup, /role="status".*waiting/); assert.doesNotMatch(waitingMarkup, /role="alert"/);
+  const rows = table([{ x: 1, y: 7, group: 'A', level: 'gap' }, { x: 2, y: 3, group: 'B', level: 'warning' }], [['x','number'],['y','number'],['group','string'],['level','string']]);
+  const rendered = markup(rows, panel('scatter', { x: 'x', y: 'y', series: 'group' }, { aepBi: true }));
+  assert.match(rendered, /gap: 1/); assert.match(rendered, /warning: 1/);
+  assert.match(rendered, /aria-label="A, 1: 7"/); assert.match(rendered, /aria-label="B, 2: 3"/);
+  assert.equal((rendered.match(/<circle/g) ?? []).length, 2);
+});
+
 test('independent basic models preserve numeric zero, strict inputs, caps, summaries and inclusive final histogram bin', () => {
   const source = table([{ value: 0 }, { value: -2 }, { value: '4' }, { value: null }, { value: Infinity }], [['value', 'number']]);
   const numeric = numericRows(source, panel('stat', { value: 'value' }));

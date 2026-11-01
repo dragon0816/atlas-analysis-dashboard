@@ -1,5 +1,20 @@
 # AEP integration tasks
 
+## AEP BI (2026-11-01)
+
+- [x] Read owner brief, AEP design §5–6 and Atlas requirements/architecture/decisions/handoff.
+- [x] Fast-forward this Atlas worktree to existing Atlas baseline 8267f66.
+- [x] Preliminary A1: read-only bounded provider, cancellation, exact-query stale cache, 409 waiting and bounded retry; synthetic consumer tests.
+- [x] Preliminary A2: application/vault controls, ordered panels, table/bar/line/scatter mapping, bool/date/text parameters, level counts, existing personal layout editor/storage, drift command.
+- [x] Enum checkpoint: npm test 123/123 and Python server tests 35 OK (7 platform skips). TypeScript/Vite build passed (173 modules); git diff --check passed. See VALIDATION.md.
+- [ ] A1: vendor and test F1 golden JSON. Blocked: producer golden directory absent in checkout and main on inspection.
+- [x] A2 enum controls: require params.<name>.values as a string array, render exactly those choices with the default selected, and test selection/disabled state and parameter mapping (2026-11-01 coordinator contract).
+- [ ] A1/A2 completion: producer drift check, golden-based consumer tests and final acceptance. Synthetic tests do not satisfy this.
+- [ ] I1: do not start until owner says F3 is on AEP main.
+
+Implementation is a preliminary working draft, not A1/A2 completion. See HANDOFF.md
+and VALIDATION.md for validation and next actions. AEP remains read-only; no push.
+
 User authorized implementation on 2026-10-10. AEP checkout is read-only.
 
 - [x] Read AEP v0.2 contract, API and store implementation.

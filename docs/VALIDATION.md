@@ -1,5 +1,17 @@
 # 驗證紀錄
 
+## 2026-11-01 — AEP BI preliminary A1/A2
+
+- Final `npm test`: 121 passed, 0 failed, 0 skipped (Node 24.11.1). This includes existing workspace persistence/drag/resize regression tests and the new synthetic BI checks.
+- `npm run build`: TypeScript and Vite pass (173 modules); existing chunk-size warnings remain.
+- Python 3.13 `-B -m unittest discover -s tests -p 'server*.py'`: 35 tests OK, 7 platform skips.
+- New consumer tests cover bounded/validated responses, additive keys, exact-parameter stale retention, GET-only credentials omission, cancellation, waiting retry limits/disposal, chart/parameter mapping and byte-level drift checking.
+- UI/SSR tests cover saved layout preservation, bool/date controls, waiting without chart errors, level counts and scatter series. They use synthetic consumer examples, not AEP golden files.
+- `npm run check:aep-bi -- --aep C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform`: FAIL, upstream `tests/fixtures/bi_feed/golden` absent (ENOENT). This remains a prerequisite, not an accepted skip.
+- Enum choice wire contract is unresolved; enum controls show only their disabled default. Golden-based acceptance and real browser acceptance are pending. A1/A2 are not complete.
+- I1 has not been implemented or run. Owner explicitly requires notification that F3 is on AEP main before starting I1. No fixture server was launched and no AEP files were modified.
+- Sandbox esbuild failures were retried with approved execution outside the sandbox. No test conditions were relaxed: the existing application-count assertions were updated from 3 to 4 for the added application, retaining path-isolation checks.
+
 日期：2026-10-08。
 
 本檔記錄 standalone 版本此次同步的驗證；component DOM／renderer double 不等於實際 GPU 或完整瀏覽器驗收。
@@ -95,3 +107,10 @@ User authorized committing the Atlas integration and Claude Code benchmark addit
 - Python 3.13.15 (Astral python-build-standalone via `uv python install 3.13`, user profile only, no system change), at repo root: `python -B -m unittest discover -s tests -p 'server*.py'` → 35 tests, OK, 7 skipped.
 - Skips are platform limits, not failures: five need Windows symlink privileges; `test_default_outside_source`, `test_hardlink_and_fifo_rejected` and `test_private_directory_and_files` cover POSIX-only behaviour (Windows uses LOCALAPPDATA and native ACLs).
 - The Python 3.13+ guard in `server/windows.py` was not changed. Python 3.12 is not a valid substitute: before 3.13, `mkdir(mode=0o700)` on Windows does not restrict the directory ACL.
+
+## 2026-11-01 — AEP BI enum checkpoint
+
+- npm test (web/): 123 tests passed, 0 failed/cancelled/skipped, duration 153696.1751 ms.
+- Python 3.13 server suite at repo root: -B -m unittest discover -s tests -p 'server*.py': 35 tests, OK (skipped=7), 20.302 seconds.
+- The first npm run build passed TypeScript but Vite/esbuild could not read a parent directory under the filesystem sandbox. The same build passed with approved execution outside the sandbox: TypeScript passed; Vite 7.3.7 transformed 173 modules and built in 33.48 seconds. Existing >500 kB chunk warnings remain; no code/test weakening or dependency changes.
+- Producer golden vendoring/drift acceptance and I1 deliberately deferred pending the coordinator's F1–F3-on-main notification. The enum contract is pending AEP main merge (b6a139c5), not an unresolved specification question.

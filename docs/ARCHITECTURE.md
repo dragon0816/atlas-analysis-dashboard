@@ -1,5 +1,16 @@
 # 架構與設定
 
+## AEP BI draft (2026-11-01)
+
+`applications/aep_bi` uses a dedicated `web/src/platform/aep/bi.ts` custom provider.
+`biDashboard.ts` maps published feed order/chart specs to standard schemaVersion 2
+panels and namespaced variables. `BiControls` reads vault/catalog data and keeps a
+saved dashboard's panels/layout intact. The existing canvas, editing controls and
+personal dashboard persistence are reused. BI scatter adds series on one scale
+through an application-specific renderer; generic scatter behavior is unchanged.
+Raw responses retain additive keys. Results remain in bounded memory and never
+become application assets. Enum controls use only AEP-resolved params.<name>.values; values_from remains metadata. F1 golden validation is pending.
+
 ## 目錄
 
 ```text

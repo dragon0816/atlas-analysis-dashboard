@@ -1,40 +1,55 @@
-# Handoff — AEP telemetry and benchmark integration (2026-10-10)
+# Handoff — AEP BI enum checkpoint (2026-11-01)
 
-## Status update (2026-10-10, Claude Code)
+## Goal and boundaries
 
-- Windows backend tests now pass on Python 3.13.15: 35 tests OK, 7 platform skips (see VALIDATION.md). Interpreter: `C:/Users/Chi_L/AppData/Roaming/uv/python/cpython-3.13-windows-x86_64-none/python.exe` (installed with `uv python install 3.13`).
-- Committed as e59655d (Codex) plus this documentation update. Not pushed.
-- **Only remaining item: real browser acceptance** of the AEP Harness and AEP Benchmarks dashboards, including Live during a running benchmark. It needs the owner at the computer.
+Implement only coordinator step 1: resolved enum validation and controls in A1/A2,
+unit tests, full frontend/backend checks, documentation and a local commit.
+AEP at C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform is read-only.
+Do not vendor golden files or start I1 until the coordinator confirms F1–F3 are on
+AEP main. Never push or open a PR. No AEP or user configuration files were edited.
 
-## Goal and scope
+## Implemented
 
-Connect local AEP telemetry and benchmark results to Atlas. The user authorized committing the combined Atlas changes after Claude Code's handoff. This task only modifies and commits Atlas; it does not modify AEP or push either repository.
+The worktree began with the uncommitted BI draft on baseline 8267f66. It includes
+the dedicated bounded GET-only provider, application package, vault/parameter
+controls, chart mapping, level counts, scatter series, personal-layout integration,
+and drift command. The provider uses an 8 MiB response/cache limit, 128 cache
+entries, eight-second timeout, cancellation, stale retention and bounded waiting
+retries. Synthetic tests cover these behaviors; they are not producer golden tests.
 
-## Implemented work
+Enum parameters now require values as a string array. BiControls renders exactly
+those choices, selects the default, honors current/saved values and disabled state,
+and emits namespaced changes through the existing result-query path. Tests cover
+malformed/missing choices, metadata retention, default/change query mapping and
+rendered selection behavior. See DECISIONS.md, 2026-11-01 enum wire-format decision.
 
-- Codex: bounded JSONL validation, deterministic event index/reducer, custom REST provider, shared WebSocket ingestion/reconnect/health checks, stale warnings, Harness preset, nested spans, directed paths, and coverage-aware metrics.
-- Claude Code: `benchmarks.ts`, benchmark/grading sessions in the provider, trace drill-down, five benchmark sources and the AEP Benchmarks preset, plus six regression tests. These additions depend on the previously uncommitted Codex integration and are committed together as one integration change.
-- AEP reference: Claude Code reports producer commit `d29ac63`, telemetry contract v0.3 §3a. Benchmark runs emit case progress/verdicts; grading runs refer to their parent benchmark; cases link to AEP conversation runs through trace IDs. Older AEP builds may ignore server-side filters, so the consumer also filters returned rows.
+## Contract and remaining work
 
-## Validation and limitations
+The coordinator explicitly confirmed params.<name>.values as AEP-resolved choice
+strings alongside values_from. Atlas never resolves values_from. This contract is
+pending AEP main merge (b6a139c5), on branch bi-analysis-dashboard-f1-f3 in worktree
+C:/Users/Chi_L/.paseo/worktrees/2qnenase/sudden-mayfly, as the coordinator confirmed.
+It is not a spec gap; wait for the coordinator's merge notification.
 
-- Frontend dependency installation is complete; do not reinstall merely to resume work.
-- Current production build and TypeScript check passed during commit preparation. The >500 kB chunk warning is nonfatal.
-- See VALIDATION.md for the final full-suite result from commit preparation.
-- Prior Claude Code read-only smoke check reported benchmark cases, pass rate, grading coverage and trace-to-span drill-down working against AEP d29ac63. This was a shell/provider check, not browser acceptance.
-- Real browser acceptance of Harness and Benchmarks remains pending, including Live during an active benchmark, switching runs/presets, offline import and cleanup.
-- Windows backend tests remain blocked by the available Python 3.12 runtime; the existing private-directory guard requires Python 3.13+. Backend code is unchanged. Do not weaken the guard.
-- This commit records implemented work, not completion of all project acceptance requirements. No push is authorized or performed.
+A1/A2 remain preliminary until producer golden vendoring, golden-based consumer
+tests, drift verification and acceptance pass. No golden JSON was added and no I1
+or live producer/browser acceptance was run. Existing Harness/Benchmarks browser
+acceptance remains pending independently.
 
-## Decisions and local artifacts
+## Verification
 
-See DECISIONS.md for the bounded history/index, direct loopback reads, cursor lifecycle and metrics decisions. Harness defaults to 24 hours; benchmark sessions default to seven days and load runs separately to avoid crowding by general telemetry. No new dependencies, credentials, real traces or backend proxy were added.
+- npm test: 123 passed, 0 failed/cancelled/skipped (153696.1751 ms).
+- npm run build: TypeScript and Vite passed, 173 modules, 33.48 seconds; existing
+  chunk-size warnings. First sandbox attempt failed on parent-directory access;
+  approved execution outside the sandbox passed.
+- Python 3.13 server suite: 35 tests, OK (skipped=7), 20.302 seconds.
+- git diff --check passed. No separate lint script exists.
+See VALIDATION.md for commands and limitations.
 
-`docs/claude-benchmarks-provider.patch` is Claude Code's temporary diff against the original uncommitted provider. Keep it locally as a reference; it is excluded from the commit because Git now records the actual implementation.
+## Next steps
 
-## Next actions
-
-1. Obtain a Windows Python 3.13+ interpreter and run `-B -m unittest discover -s tests -p 'server*.py'` at the Atlas root.
-2. Start Atlas using LOCAL_DEVELOPMENT.md and perform browser acceptance for both AEP presets; use a narrow Harness window on busy hosts.
-3. Address any acceptance findings with regression tests and update TASKS.md / VALIDATION.md.
-4. Do not modify or launch benchmark jobs in AEP without task authorization. No push unless requested.
+1. Wait for the coordinator's explicit F1–F3-on-main notification.
+2. Vendor producer golden JSON verbatim, verify the enum payload and add consumer
+   tests against it; run the drift command without changing the producer files.
+3. Rerun npm test, npm run build and Python server tests, then I1 only when released.
+4. Record final acceptance in TASKS.md/VALIDATION.md and refresh this handoff.
