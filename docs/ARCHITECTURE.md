@@ -105,3 +105,13 @@ Presets 與個人變體分離。這是單使用者本機工具，未提供帳號
 The data-only `applications/aep_harness` package uses an application-scoped `AepProvider`, registered by DashboardPage only for that application. JSONL, REST and WebSocket feed the same bounded event reducer under `web/src/platform/aep`. No AEP source/configuration or dashboard backend routes change. See AEP_TELEMETRY_INTEGRATION.md for the verified transport contract and limits.
 
 Nested timeline rendering is opt-in with `display.nested`; graph path direction is opt-in with `display.directed_path`. Existing flat timelines and undirected paths keep their behavior. Added components reuse existing dashboard controls and renderer interfaces. Full build/browser validation remains pending; see HANDOFF.md.
+
+## AEP reads Atlas dashboard order (2026-11-01)
+
+AEP's server-side Knowledge import reads the existing loopback GET /dashboards and
+GET /dashboards/{name}, without Origin. No server policy/schema change is needed.
+BI identities are datasource.id=aep.bi.result plus query.vault/query.slug. AEP
+sorts eligible panels by stored y/x/id, keeps each vault/slug's first occurrence
+and lists ignored duplicates in its preview. Atlas retains all personal geometry,
+transforms and Duplicate behavior. See AEP_DASHBOARD_READ_CONTRACT.md and the
+Atlas-owned producer goldens in web/tests/fixtures/atlas_dashboard_golden/.

@@ -19,6 +19,15 @@
 Producer golden and I1 acceptance are implemented. See HANDOFF.md
 and VALIDATION.md for validation and next actions. AEP remains read-only; no push.
 
+## Atlas dashboard read producer for AEP (2026-11-01)
+
+- [x] Confirm existing source/vault/slug identity and flat stored geometry; no schema change.
+- [x] Confirm no-Origin loopback reads and cross-site refusal without changing HTTP policy.
+- [x] Document read routes/statuses, fields, geometry order and coordinator-approved first-occurrence duplicate rule in AEP_DASHBOARD_READ_CONTRACT.md.
+- [x] Produce three exact response-body goldens, generation script and isolated HTTP tests (5/5), including a later duplicate and legacy dashboard; frontend contract tests 3/3.
+- [x] Final validation: npm test 150/150; TypeScript/Vite build (173 modules); Python 40 tests OK (7 skipped); upstream feed drift 17 files match; git diff --check passes. Commit the producer contract on the current branch, without push/PR.
+- [ ] AEP consumer vendors the committed producer files and implements import preview/order/hidden (AEP-owned follow-up; no AEP changes here).
+
 User authorized implementation on 2026-10-10. AEP checkout is read-only.
 
 - [x] Read AEP v0.2 contract, API and store implementation.

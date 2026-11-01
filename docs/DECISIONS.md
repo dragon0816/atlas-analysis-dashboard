@@ -106,3 +106,31 @@ cases to verify automatic and manual republish updates in the actual browser.
 Empty saved boards use the same reconciliation callback and retain dashboard
 identity/title and saved revision. When no panels exist, initial placement uses
 the normal generated layout; additions to non-empty boards append below them.
+
+## 2026-11-01 — Atlas dashboard read contract for AEP import
+
+Expose the existing schemaVersion 2 read API as the producer contract for AEP's
+Knowledge-page import. Existing BI panel identity already consists of
+panels[].datasource.id = aep.bi.result, query.vault and query.slug; do not add a
+second identity structure or require query.digest/display flags. Legacy documents
+remain loadable. GET /dashboards is a bare names array and GET /dashboards/{name}
+is the stored document. The current loopback Host/Origin checks already permit
+server-side reads without Origin while refusing unapproved cross-site requests;
+no HTTP policy or API/schema change is required.
+
+The owner specified stored geometry order (layout.y, layout.x, panel.id). The
+recognized panel model is flat, with no tabs/groups. Duplicate panel preserves
+its analysis identity, so the coordinator explicitly decided: sort first, then
+keep each (vault, slug)'s FIRST occurrence and let AEP list ignored duplicates in
+its import preview. Atlas keeps its existing Duplicate functionality. Ignore
+non-AEP and foreign-vault panels. AEP computes hidden from its own vault analyses;
+Atlas defines no hidden field for this contract; positions/sizes/transforms are not imported into AEP.
+
+Freeze three producer-owned response-body goldens at
+web/tests/fixtures/atlas_dashboard_golden/. Use the real Atlas canonical encoder
+and fictional fixtures only; test real HTTP responses byte-for-byte in isolated
+temporary private stores. Include misleading non-AEP fields, another vault,
+array/geometry order differences, an ID tie and a later duplicate. Preserve JSON
+bytes with Git attributes; AEP vendors these files from the committed producer.
+Rejected: modifying security headers, reading personal stores, a new schema or
+export endpoint, relying on array order, or resolving duplicates arbitrarily.

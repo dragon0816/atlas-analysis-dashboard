@@ -1,0 +1,1 @@
+{"applicationId":"sample-application","id":"legacy-overview","panels":[{"datasource":{"id":"legacy.rows"},"display":{},"id":"legacy-table","layout":{"h":4,"w":6,"x":0,"y":0},"mapping":{},"title":"Legacy table","transform":[],"type":"table"}],"schemaVersion":2,"title":"Legacy overview","variables":[]}

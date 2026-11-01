@@ -193,3 +193,35 @@ coordinator; this is not a substitute for owner-present §6.5 acceptance.
 - npm run check:aep-bi -- --aep <AEP main>: all 17 producer files match.
 - git diff --check passed. No new dependency, AEP edit or golden edit.
 - Final npm test: 147 passed, 0 failed/cancelled/skipped; 132252.8646 ms.
+
+## 2026-11-01 — Atlas dashboard read producer contract
+
+The existing v2 panel identity is datasource.id=aep.bi.result + query.vault +
+query.slug. No runtime HTTP/schema change was needed: no-Origin loopback reads
+already work and cross-site protections remain enforced. The coordinator resolved
+Duplicate-panel ambiguity: geometry-sort first, then keep the first vault/slug
+and list ignored duplicates in AEP's import preview. See AEP_DASHBOARD_READ_CONTRACT.md.
+
+Three producer response-body goldens are committed under
+web/tests/fixtures/atlas_dashboard_golden/: list.json, dashboard-mixed.json,
+dashboard-legacy.json. Their bytes come from Atlas's real encoder/list formatting;
+fixtures are fictional and do not access personal stores. Git preserves their bytes.
+
+- New targeted frontend contract suite: 3 passed, 0 failed/skipped.
+- New targeted server contract suite: 5 tests, OK (3.298 s), no skips. It starts
+  actual HTTP handlers against its own TemporaryDirectory/ephemeral port and
+  compares every response body byte-for-byte with the golden files.
+- Exact reads without Origin pass for the list and both stored dashboards;
+  Content-Type/no-store/ETag/HEAD are checked. External/null Origin, foreign Host
+  and cross-site without Origin remain 403. Missing/invalid names and unsupported
+  read methods return the expected 404/400/405. Reads preserve stored bytes/mtime.
+- Frontend checks load both legacy and mixed schemaVersion 2 documents unchanged,
+  assert generated BI identities and verify geometry/id ordering and first-occurrence
+  dedup while ignoring non-AEP/foreign-vault panels.
+- npm run build: TypeScript and Vite 7.3.7 passed, 173 modules, 42.66 s; existing
+  >500 kB chunk warnings only.
+- Python 3.13: -B -m unittest discover -s tests -p 'server*.py': 40 tests,
+  OK (skipped=7), 26.747 s.
+- npm run check:aep-bi -- --aep <AEP main>: all 17 upstream feed files match.
+- git diff --check passes. No AEP files or existing AEP goldens changed.
+- Final npm test: 150 passed, 0 failed/cancelled/skipped, 176394.9136 ms.
