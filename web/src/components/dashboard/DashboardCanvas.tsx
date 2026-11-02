@@ -4,9 +4,9 @@ import { GRID_COLUMNS, GRID_GAP, GRID_ROW, responsivePanels, settlePanels } from
 import type { PlatformRuntime } from "../../platform/runtime";
 import type { Dataset, PanelDefinition, PanelEvent, Row, VariableValues } from "../../platform/types";
 
-export function DashboardCanvas({ panels, variables, runtime, editing, selected, refreshKey, onSelect, onPanels, onRemove, onEvent, onData }: {
+export function DashboardCanvas({ panels, variables, runtime, editing, selected, refreshKey, onSelect, onPanels, onRemove, onEvent, onData, onPanelError }: {
   panels: PanelDefinition[]; variables: VariableValues; runtime: PlatformRuntime; editing: boolean; selected: string | null; refreshKey: number;
-  onSelect: (id: string) => void; onRemove: (id: string) => void; onPanels: (panels: PanelDefinition[]) => void; onEvent: (panel: PanelDefinition, event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void;
+  onSelect: (id: string) => void; onRemove: (id: string) => void; onPanels: (panels: PanelDefinition[]) => void; onEvent: (panel: PanelDefinition, event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void; onPanelError?: (id: string, message: string) => void;
 }) {
   const grid = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1000);
@@ -57,12 +57,12 @@ export function DashboardCanvas({ panels, variables, runtime, editing, selected,
   return <div className="atlas-canvas-scroll"><div ref={grid} className={`atlas-canvas ${editing ? "is-editing" : ""}`} style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gridAutoRows: GRID_ROW, gap: GRID_GAP }}>
     {!panels.length && <div className="atlas-empty-board"><span className="text-4xl text-sky-400">▦</span><h2>Your dashboard starts here</h2><p>{editing ? "Choose a visualization from the panel library, or Cancel to restore your dashboard." : "Choose Edit Dashboard to add panels."}</p></div>}
     {view.map(panel => <div data-panel-id={panel.id} key={panel.id} className={`atlas-panel ${selected === panel.id && editing ? "is-selected" : ""} ${moving === panel.id ? "is-moving" : ""}`} style={{ gridColumn: `${panel.layout.x + 1} / span ${panel.layout.w}`, gridRow: `${panel.layout.y + 1} / span ${panel.layout.h}` }} onClick={() => editing && onSelect(panel.id)}>
-      <PanelCard panel={panel} variables={variables} runtime={runtime} editing={editing} refreshKey={refreshKey} onEvent={event => onEvent(panel, event)} onData={onData} onRemove={() => remove(panel.id)} onMove={event => start(panels.find(p => p.id === panel.id)!, "move", event)} />
+      <PanelCard panel={panel} variables={variables} runtime={runtime} editing={editing} refreshKey={refreshKey} onEvent={event => onEvent(panel, event)} onData={onData} onError={onPanelError} onRemove={() => remove(panel.id)} onMove={event => start(panels.find(p => p.id === panel.id)!, "move", event)} />
       {editing && <button type="button" className="atlas-resize" aria-label={`Resize ${panel.title}`} title="Drag to resize. Use Layout properties for keyboard control." onPointerDown={event => start(panels.find(p => p.id === panel.id)!, "resize", event)}>◢</button>}
     </div>)}
   </div></div>;
 }
-function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, onData, onMove, onRemove }: { panel: PanelDefinition; variables: VariableValues; runtime: PlatformRuntime; editing: boolean; refreshKey: number; onEvent: (event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void; onMove: (event: React.PointerEvent) => void; onRemove: () => void }) {
+function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, onData, onError, onMove, onRemove }: { panel: PanelDefinition; variables: VariableValues; runtime: PlatformRuntime; editing: boolean; refreshKey: number; onEvent: (event: PanelEvent) => void; onData: (id: string, dataset: Dataset) => void; onError?: (id: string, message: string) => void; onMove: (event: React.PointerEvent) => void; onRemove: () => void }) {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -70,13 +70,14 @@ function PanelCard({ panel, variables, runtime, editing, refreshKey, onEvent, on
   const [localRefresh, setLocalRefresh] = useState(0);
   const card = useRef<HTMLDivElement>(null);
   const dataCallback = useRef(onData); dataCallback.current = onData;
+  const errorCallback = useRef(onError); errorCallback.current = onError;
   const queryKey = JSON.stringify([panel.datasource, panel.query, panel.transform, variables, panel.refresh, panel.type === "network" ? [panel.mapping.nodeId, panel.mapping.edgeSource, panel.mapping.edgeTarget] : null]);
   useEffect(() => {
     const controller = new AbortController();
     let unsubscribe: (() => void) | undefined;
     let timer: ReturnType<typeof setInterval> | undefined;
     const receive = (data: Dataset) => { if (!controller.signal.aborted) { setDataset(data); setError(""); setLoading(false); dataCallback.current(panel.id, data); } };
-    const fail = (ex: unknown) => { if (!controller.signal.aborted) { setError(String(ex instanceof Error ? ex.message : ex)); setLoading(false); } };
+    const fail = (ex: unknown) => { if (!controller.signal.aborted) { const message = String(ex instanceof Error ? ex.message : ex); setError(message); setLoading(false); errorCallback.current?.(panel.id, message); } };
     const query = (refresh = false) => { if (refresh) runtime.invalidate(panel.datasource.id); return runtime.query(panel, variables, controller.signal).then(receive).catch(fail); };
     setLoading(true); setError("");
     void query(refreshKey > 0 || localRefresh > 0).then(() => {

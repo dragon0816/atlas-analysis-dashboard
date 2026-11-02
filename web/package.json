@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test:aep-bi:i1": "node ../scripts/test-aep-bi-i1.mjs",
+    "test:aep-embed:i1": "node ../scripts/test-aep-embed-i1.mjs",
     "check:aep-bi": "node ../scripts/check-aep-bi.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",

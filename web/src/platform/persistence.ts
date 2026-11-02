@@ -5,7 +5,7 @@ async function checked(response: Response): Promise<Response> {
   if (response.ok) return response;
   let message = `${response.status} ${response.statusText}`;
   try { const error = await response.json(); message = String(error.detail?.message ?? error.detail ?? message); } catch { /* Preserve the HTTP error. */ }
-  throw new Error(message);
+  throw Object.assign(new Error(message), { status: response.status });
 }
 export async function savedDashboardNames(signal?: AbortSignal): Promise<string[]> {
   return (await checked(await fetch("/dashboards", { signal }))).json();

@@ -19,7 +19,7 @@ export interface BiAnalysis extends Row {
 export interface BiCatalog extends Row { vault: string; version: BiVersion; order: string[]; analyses: BiAnalysis[] }
 export interface BiResult extends Row { slug: string; digest: string; version: BiVersion; params: Row; columns: string[]; rows: unknown[][]; truncated: boolean; computed_at: string }
 export type BiState = 'ready' | 'waiting' | 'offline' | 'stale' | 'error';
-export interface BiSnapshot<T> { state: BiState; data?: T; message?: string }
+export interface BiSnapshot<T> { state: BiState; data?: T; message?: string; code?: string }
 class FeedError extends Error { readonly code: string; constructor(code: string, message: string) { super(message); this.code = code; } }
 function object(value: unknown): Row { if (!isRecord(value)) throw new Error('Invalid BI object'); return value; }
 function string(value: unknown): asserts value is string { if (typeof value !== 'string' || value.length > 65536) throw new Error('Invalid BI string'); }
@@ -90,7 +90,7 @@ export class AepBiProvider implements SourceProvider {
     } catch (ex) {
       checkAbort(signal); if (this.disposed) throw ex;
       const data = this.cache.get(path) as T | undefined;
-      return { state: ex instanceof FeedError ? 'error' : data ? 'stale' : !received || controller.signal.aborted ? 'offline' : 'error', data, message: String(ex instanceof Error ? ex.message : ex) };
+      return { state: ex instanceof FeedError ? 'error' : data ? 'stale' : !received || controller.signal.aborted ? 'offline' : 'error', data, message: String(ex instanceof Error ? ex.message : ex), code: ex instanceof FeedError ? ex.code : undefined };
     } finally { clearTimeout(timeout); signal.removeEventListener('abort', abort); this.controllers.delete(controller); }
   }
   health(signal: AbortSignal) { return this.read('health', validateHealth, signal); }

@@ -63,7 +63,7 @@ try {
   assert.equal(await checkGolden(aep), 17);
   const fixture = start(resolve(aep, '.venv/Scripts/python.exe'), ['-B', 'scripts/bi_feed_server.py', '--port', '53611'], aep, { PYTHONDONTWRITEBYTECODE: '1' });
   await ready(fixture, /ready http:\/\/127\.0\.0\.1:53611\/api\/v1\/bi/);
-  const vite = start(process.execPath, [resolve(root, 'web/node_modules/vite/bin/vite.js'), '--host', '127.0.0.1', '--port', '5179', '--strictPort'], resolve(root, 'web'), { VITE_AEP_BI_PORT: '53611' });
+  const vite = start(process.execPath, [resolve(root, 'web/node_modules/vite/bin/vite.js'), '--host', '127.0.0.1', '--port', '5179', '--strictPort'], resolve(root, 'web'), { VITE_AEP_BI_PORT: '53611', NO_COLOR: '1' });
   await ready(vite, /http:\/\/127\.0\.0\.1:5179/);
   const executable = process.env.BI_BROWSER ?? 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
   await access(executable);

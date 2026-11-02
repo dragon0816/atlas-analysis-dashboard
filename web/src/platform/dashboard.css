@@ -115,3 +115,13 @@
   .atlas-workspace-body.is-editing .atlas-properties { border-left:0; }
   .atlas-panel-remove { min-height:44px; min-width:64px; }
 }
+
+/* Read-only embed pages: fill the frame, no app chrome. */
+.atlas-embed { overflow:hidden; }
+.atlas-embed .atlas-canvas-scroll { padding:8px; }
+.atlas-embed .atlas-empty-board,.atlas-embed [title="Fullscreen"] { display:none; }
+.atlas-embed .atlas-source-bar { padding:6px 8px; }
+.atlas-embed-message { margin:0; padding:16px; font-size:13px; }
+.atlas-embed-panel .atlas-canvas-scroll { display:flex; }
+.atlas-embed-panel .atlas-canvas { flex:1; min-height:240px; grid-template-rows:minmax(0,1fr); }
+.atlas-embed-panel [data-panel-id] { grid-column:1 / -1 !important; grid-row:1 !important; }

@@ -5,6 +5,7 @@ import { AepControls } from '../components/aep/AepControls';
 import { AepBiProvider } from '../platform/aep/bi';
 import { BiControls } from '../components/aep/BiControls';
 import { PlatformRuntime } from "../platform/runtime";
+import { retain } from "../platform/retain";
 import { PANEL_LIBRARY } from "../platform/catalog";
 import { nextPanelLayout, settlePanels } from "../platform/layout";
 import { actionValues, applyFilterAction, safeLink } from "../platform/actions";
@@ -31,15 +32,6 @@ function filterSummary(variable: VariableDefinition, value: VariableValues[strin
     return from || to ? `${from.slice(0, 10) || "Any start"} – ${to.slice(0, 10) || "Any end"}` : null;
   }
   return Array.isArray(value) ? value.join(", ") : String(value);
-}
-const resourceOwners = new WeakMap<object, number>();
-function retain(resource: { dispose: () => void } | null) {
-  if (!resource) return () => {};
-  resourceOwners.set(resource, (resourceOwners.get(resource) ?? 0) + 1);
-  return () => {
-    resourceOwners.set(resource, Math.max(0, (resourceOwners.get(resource) ?? 1) - 1));
-    queueMicrotask(() => { if (resourceOwners.get(resource) === 0) resource.dispose(); });
-  };
 }
 export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?: (dirty: boolean) => void; onBusyChange?: (busy: boolean) => void } = {}) {
   const applications = applicationPackages.applications;
