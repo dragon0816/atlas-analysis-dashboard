@@ -11,6 +11,17 @@ through an application-specific renderer; generic scatter behavior is unchanged.
 Raw responses retain additive keys. Results remain in bounded memory and never
 become application assets. Enum controls use only AEP-resolved params.<name>.values; values_from remains metadata. All 17 producer goldens from merged AEP b6a139c5 are vendored and validated. I1 uses the actual fixture server and isolated headless Edge; VITE_AEP_BI_PORT configures only the fixed-loopback port.
 
+## Read-only embed pages (2026-11-02)
+
+`/embed/dashboard/<name>` and `/embed/panel?...` let AEP's chat frame real Atlas content;
+AEP_EMBED_CONTRACT.md is the contract. `main.tsx` picks `EmbedPage` on the literal `/embed/`
+prefix, the same raw prefix `server/http.py` routes on, so framable headers and embed mode
+cannot disagree. EmbedPage reuses DashboardCanvas, the renderers, the BI provider and BiControls
+(its `embed` option hides the vault picker and reload, narrows the catalog to one analysis so
+reconcile manages only that panel, and reports structured status). It imports no write path
+and keeps all state in memory. `--allow-frame-ancestor` is deliberately separate from
+`--allow-origin`: framing grants no API access.
+
 ## 目錄
 
 ```text

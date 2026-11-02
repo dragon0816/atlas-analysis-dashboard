@@ -225,3 +225,51 @@ fixtures are fictional and do not access personal stores. Git preserves their by
 - npm run check:aep-bi -- --aep <AEP main>: all 17 upstream feed files match.
 - git diff --check passes. No AEP files or existing AEP goldens changed.
 - Final npm test: 150 passed, 0 failed/cancelled/skipped, 176394.9136 ms.
+
+## 2026-11-02 — Read-only embeds for AEP's chat
+
+Final tree, run serially from web/ or the repo root, on Node 24.11.1 and Python 3.13.15, with
+ATLAS_DASHBOARD_DATA_DIR on a temporary folder. The machine was not quiet: other agents ran
+targeted tests (CPU 53-100%, 1135-1162 processes, 33-37 python).
+
+- npm test: 190 passed, 0 failed/cancelled/skipped, 522033 ms.
+- npm run build: TypeScript and Vite pass, 177 modules, 31.73 s; existing chunk warnings only.
+- Python: -B -m unittest discover -s tests -p 'server*.py': 53 tests OK (skipped=7), 22.654 s.
+- check:aep-bi: 17 files match. git diff --check passes.
+- npm run test:aep-embed:i1: exit 0, 12/12, against the real Atlas server on a temporary store,
+  AEP's fixture server (--queue-delay 6) and isolated headless Edge, framed from loopback ports:
+  panel with golden rows and frame-ancestors header; fills the 900x520 frame and posts 450 px to
+  the parent, stable when the frame resizes; URL parameter and control refetch; 4x 409, retries
+  stop, waiting without alert, Refresh reaches the golden result; four clear states; dashboard
+  cross-site with referrerpolicy=origin; bad transform and missing vault each in their own card;
+  403 cross-site without Referer; other ancestor not rendered; offline keeps golden rows; offline
+  from the start; no write request and no browser exception anywhere. Ports and profile cleaned up.
+- npm run test:aep-bi:i1: exit 0, 6/6 and the republish stub (regression for the BiControls change).
+- The stand-in parent copies Agent Web's no-referrer header. Real Agent Web was not used.
+
+test_cross_process_compare_and_swap, solo:
+
+| Run | Result | Seconds | Before | After |
+| --- | --- | --- | --- | --- |
+| 1 | OK | 9 | CPU 100%, python 33 | CPU 58%, python 37 |
+| 2 | OK | 13 | CPU 100%, python 35 | CPU 100%, python 35 |
+| 3 | OK | 8 | CPU 100%, python 35 | CPU 54%, python 35 |
+| 4 | OK | 3 | CPU 53%, python 35 | CPU 92%, python 35 |
+| 5 | OK | 3 | CPU 78%, python 35 | CPU 64%, python 33 |
+
+An earlier set of five, whose process counts were lost, also passed (5-25 s). Before that, at CPU
+100% with 31 python processes, it failed twice in the suite and once in three solo runs, on its
+15 s join. Storage code is unchanged from the baseline. Load is the likely cause, but this
+never ran on a quiet machine, so it is not proven. The test was not changed. Commit 0aff59f was
+made while that test was failing, because the command chain did not stop on it.
+
+What the runs found, each fixed at its cause with no assertion relaxed:
+
+- The page's `ready` came before results, and a failed panel left `loading` forever: fixed in
+  the page (`onPanelError`, per-panel pending), with a test that an unanswered read stays loading.
+- dashboard-mixed.json's `limit` used `count`, which the runtime refuses: fixed in the generator.
+- Runner faults: it clicked Refresh on a timer, cancelling each read under load; read the old
+  frame before a navigation committed; read a panel's warning before it arrived; left Edge alive
+  so Node never exited (now a process-tree kill). A failed page test kept the test process alive
+  through polling (28 minutes, stopped at the limit); pages now close after each test.
+- The BI runner never saw Vite ready where colours are forced; it now sets NO_COLOR for Vite.

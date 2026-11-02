@@ -43,6 +43,10 @@ python -m server --allow-origin http://localhost:5173
 
 若前端實際使用 `http://127.0.0.1:5173`，請改填該精確 origin。這個選項只接受本機 HTTP origin；不支援萬用字元。它不提供跨 origin CORS，開發仍透過 Vite proxy。
 
+## AEP 嵌入
+
+`/embed/*` 回傳前端頁面，可由 `frame-ancestors` 列出的 origin 嵌入。`--allow-frame-ancestor <origin>`（可重複）取代預設的 Agent Web origin，且不授予 API 權限。見 [AEP_EMBED_CONTRACT.md](../docs/AEP_EMBED_CONTRACT.md)。
+
 ## API 契約
 
 - `GET /dashboards`：已存檔名稱陣列。

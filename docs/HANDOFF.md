@@ -1,66 +1,60 @@
-# Handoff — Atlas dashboard read producer contract (2026-11-01)
+# Handoff — Read-only Atlas embeds for AEP's chat (2026-11-02)
 
 ## Goal and boundary
 
-Produce Atlas's existing dashboard read contract and goldens before AEP implements
-its Knowledge-page import. AEP will read server-side without Origin, import only
-analysis order into its own shared vault meta:dashboard, and compute hidden itself.
-Atlas remains the owner of layout/transforms. No AEP edits, push or PR.
+AEP's general AI chat frames real Atlas panels and dashboards in a conversation. Layouts
+stay personal: AEP never writes Atlas dashboards. When Atlas is not running, AEP falls back to
+its own chart, which is AEP's work. This branch (`atlas-embed`) holds the Atlas side only. The
+AEP checkout was read-only. Nothing was pushed or merged, and no PR was opened.
+
+The contract is docs/AEP_EMBED_CONTRACT.md. The decision record is DECISIONS.md, 2026-11-02,
+which amends the 2026-11-01 "no embed" position. Results are in VALIDATION.md, 2026-11-02.
 
 ## Implemented
 
-- docs/AEP_DASHBOARD_READ_CONTRACT.md defines the existing GET list/document
-  routes, statuses, server-side no-Origin access, exact identity fields and order.
-- Existing schemaVersion 2 identifies BI panels by datasource.id=aep.bi.result,
-  query.vault and query.slug. No schema, generated identity or HTTP change needed.
-- Verified server/http.py allows no-Origin loopback reads and still rejects
-  foreign Host, external/null Origin and unapproved cross-site fetch-site.
-- The panel model is flat, without tabs/groups. Duplicate panel preserves the
-  same vault/slug; the coordinator chose first occurrence AFTER y/x/panel-id sort.
-  AEP lists ignored duplicates in its preview. Atlas Duplicate behavior stays.
-- Three exact response body goldens: web/tests/fixtures/atlas_dashboard_golden/
-  list.json, dashboard-mixed.json and dashboard-legacy.json. Git attributes keep
-  their bytes. The adjacent README and contract map filenames to request paths.
-- scripts/generate-atlas-dashboard-golden.py creates fictional fixtures using the
-  real Atlas encoder, never opens personal stores. No producer file is fabricated
-  from AEP's consumer. Goldens are generated intentionally, not during tests.
-- tests/server_dashboard_contract_test.py uses its own TemporaryDirectory and
-  ephemeral loopback server: exact bodies/ETag/statuses, no-Origin success,
-  cross-site refusal, geometry/dedup behavior and no stored-file rewrites.
-- web/tests/atlas-dashboard-contract.test.mjs verifies old/mixed documents load,
-  generated BI panels expose the documented identity, and fixture sorting/dedup.
-
-## Fixture import result
-
-Stored names: Legacy overview and Mixed BI layout. GET names as percent-encoded
-path components, not dashboard IDs or filenames. For target feed-fixture, mixed
-eligible IDs sort to bi-tech, bi-coverage, bi-region, bi-coverage-copy. Distinct
-slug order: tech-updates, node-coverage, accounts-by-region. Ignore non-aep and
-bi-other-vault; list bi-coverage-copy as a duplicate in AEP's preview. The legacy
-dashboard yields no AEP entries. Geometry ties are intentional and resolved by ID.
-Do not use array order or run responsive/settled layout before importing.
+- server/http.py: `/embed/*` serves index.html with `frame-ancestors` limited to Agent Web by
+  default and no X-Frame-Options; every other route and every error stays DENY.
+  `--allow-frame-ancestor` replaces the defaults and grants no API access. A framed cross-site
+  document request passes only with a Referer from an allowed ancestor.
+- web/src/pages/EmbedPage.tsx: both routes, reusing DashboardCanvas, the renderers, the BI
+  provider, polling and reconcile. BiControls gained an `embed` option. No write path is imported.
+- web/src/platform/embedRoute.ts (URL grammar), aep/biEmbed.ts (state and parameter logic).
+- Goldens for AEP to vendor: web/tests/fixtures/atlas_embed_golden/.
+- The read-contract golden dashboard-mixed.json: limit key corrected from `count` to `n`.
+- scripts/test-aep-embed-i1.mjs: headless check, `npm run test:aep-embed:i1`.
 
 ## Verification
 
-New targeted HTTP tests: 5/5 passed. New frontend contract tests: 3/3 passed.
-Final full checks: npm test 150 passed, 0 failed/cancelled/skipped (176394.9136 ms);
-build TypeScript/Vite passed (173 modules, 42.66 s, existing chunk warnings);
-Python server suite 40 tests OK (7 skipped, 26.747 s); upstream feed drift 17 files
-match; git diff --check passes. See VALIDATION.md and TASKS.md.
-See DECISIONS.md, 2026-11-01 Atlas dashboard read contract, for approved choices.
+All passed on the final tree: npm test 190/190; build (177 modules); Python 53 tests OK (7
+platform skips); drift 17 files; embed I1 12/12; BI I1 6/6 plus the republish stub;
+`git diff --check`. The machine was never quiet (CPU 53-100%, 33-37 python processes).
+
+## Known issues and risks
+
+1. test_cross_process_compare_and_swap has a 15 s join. It failed twice in the suite and once in
+   three solo runs at CPU 100% with 31 python processes, then passed 10 of 10 solo and twice in
+   the suite at 33-37 python processes. Storage code is unchanged. It looks load-related, but
+   this was not measured on a quiet machine, so that is not proven. The test was not relaxed.
+2. Not verified: framing from real Agent Web (the check uses a stand-in parent with Agent Web's
+   no-referrer header); Firefox, whose missing `location.ancestorOrigins` makes the size message
+   depend on `document.referrer`, so with no-referrer it posts nothing. The contract already
+   treats that message as optional.
+3. A slow script result can rest on `waiting` until Refresh, under the 2026-11-01 retry rule.
+   Under load even the fixture's 2 s delay can outlast the retries.
+4. Existing behaviour, not changed here: reconcile appends any published analysis missing from a
+   saved board, so a dashboard kept to a subset of analyses grows in the view, in the app and in
+   an embed. This may surprise someone embedding a chosen subset; raise it with the owner.
+5. Both I1 runners need `NO_COLOR` for Vite only where colours are forced (the BI runner sets it).
+   Running ports 53611-53614 and 5179 must be free, and I1s must not overlap.
 
 ## Next steps
 
-1. AEP vendors all three JSON files verbatim from this committed Atlas version,
-   recording the producer commit, then implements/import-tests its own consumer.
-2. AEP reads only source/vault/slug + stored y/x/id, previews ignored duplicates,
-   and computes hidden itself. Positions/sizes/transforms are never imported.
-3. Coordinate future contract changes on Atlas producer first, then revendor.
+1. AEP vendors the final contract commit's goldens, including the changed dashboard-mixed.json,
+   and renders the iframe with `referrerpolicy="origin"` and no opaque sandbox.
+2. Check framing from real Agent Web once AEP's side lands. Owner-present I2 stays separate.
+3. Rerun the compare-and-swap test on a quiet machine to settle item 1.
 
-## Earlier BI continuity
+## Earlier continuity
 
-Previous checkpoint eefc921 fixes published catalog reconciliation and passed
-147 frontend tests, build, Python 35 tests (7 skips), 17-file AEP feed drift and
-I1 plus a republish stub. The coordinator owns the real Agent Web rehearsal/I2
-confirmation; this read-contract slice does not claim that acceptance. Earlier
-Harness/Benchmarks browser acceptance remains independently pending.
+The 2026-11-01 read contract and BI work remain as recorded in DECISIONS.md and VALIDATION.md.
+Harness and Benchmarks browser acceptance is still independently pending (TASKS.md).

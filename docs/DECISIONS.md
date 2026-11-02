@@ -168,3 +168,20 @@ Choices made to implement them; the contract is AEP_EMBED_CONTRACT.md:
 - An unknown or invalid panel URL parameter is refused with a clear state instead of falling
   back to the default, so a link in a conversation cannot silently show other data than the
   AI said. The reconcile fallback still applies after a republish, as in the app.
+
+Later the same day, from building the embed pages and running their headless check:
+
+- Three states the owner decisions did not cover were settled by the orchestrator as
+  "decide from the existing behaviour", and are in the contract. A failing panel stays
+  in its own card and sets the root to `error`. A dashboard whose vault is gone is `error`
+  with its layout kept, because the stored layout is still real; `unknown_vault` is panel-only.
+  Waiting keeps the 2026-11-01 rule (three retries, then Refresh): the embed does not get its
+  own policy, so a slow script result can rest on `waiting`, and AEP is told not to fall back
+  on it. Rejected: unbounded polling, which would change that earlier decision for the app too.
+- The root's `ready` waits for every BI panel to answer, because the first version reported it
+  before results arrived. PanelCard failures now reach the root through an optional
+  `onPanelError`; without it a failed panel left the state on `loading` for good.
+- The read-contract golden `dashboard-mixed.json` carried `{"op":"limit","count":5}`, which the
+  runtime refuses (`n` is the key), so those fixture panels could not render. The generator
+  now writes `n`, on the orchestrator's instruction. This changes the file's bytes, so AEP
+  re-vendors it. The read contract itself is unchanged: AEP ignores transforms.

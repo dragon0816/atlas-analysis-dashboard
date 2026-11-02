@@ -34,6 +34,23 @@ After the real fixture cases, an Atlas-only local HTTP stub serves republished v
 .scratch/aep-bi-i1/. A failed run also writes failure-dom.txt and failure.png.
 This fixture acceptance is separate from the owner-present real-vault acceptance.
 
+## AEP embed pages
+
+AEP's chat frames `/embed/dashboard/<name>` and `/embed/panel?vault=&slug=`; see
+[AEP_EMBED_CONTRACT.md](AEP_EMBED_CONTRACT.md). `--allow-frame-ancestor <origin>` replaces the
+default Agent Web ancestors. The headless check, from web/:
+
+```powershell
+$env:AEP_REPO = 'C:/Users/Chi_L/Documents/ChatGPT/agentic-engineering-platform'
+$env:ATLAS_PYTHON = 'C:/Users/Chi_L/.local/bin/python3.13.exe'  # Python 3.13+ on Windows
+npm.cmd run test:aep-embed:i1
+```
+
+It builds into a temporary folder with VITE_AEP_BI_PORT=53611, runs the real Atlas server on a
+temporary store (never your Atlas data), AEP's fixture server, and isolated headless Edge, and
+frames both routes from another loopback port. Keep ports 53611-53614 free. Evidence goes to
+.scratch/aep-embed-i1/. No Agent Web or desktop GUI is involved.
+
 先跑內附 synthetic applications，確認 dashboard 本身正常，再依 [AEP 整合交接](AEP_TELEMETRY_INTEGRATION.md) 接本機 telemetry。本 repo 不包含 AEP host、正式 traces 或 API credentials。AEP adapter 已加入但完整驗證尚未完成，請先讀 docs/HANDOFF.md。
 
 ## 1. 環境與版本

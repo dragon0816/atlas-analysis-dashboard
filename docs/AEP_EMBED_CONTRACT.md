@@ -112,16 +112,31 @@ The embed's root element is `[data-embed-state="<state>"]`, for tests and diagno
 | --- | --- | --- |
 | `loading` | First reads are in progress | Loading message |
 | `ready` | Content is shown and current | The panel or dashboard |
-| `waiting` | The feed answered `409 result_not_ready`; a bounded retry follows | Waiting message in the panel, last data if any |
+| `waiting` | The feed answered `409 result_not_ready` | Waiting message in the panel, last data if any |
 | `offline` | AEP's feed cannot be reached | Offline status; last data is kept, polling recovers on its own |
 | `unknown_dashboard` | Atlas has no dashboard with that name (404) | Clear message naming it |
-| `unknown_vault` | The feed has no such published vault | Clear message naming it |
+| `unknown_vault` | Panel embed only: the feed has no such published vault | Clear message naming it |
 | `unknown_analysis` | The vault's published version has no such slug, including one removed by a later republish | Clear message naming it |
 | `invalid_link` | Malformed URL, repeated key, unknown parameter or bad value | Clear message naming the problem |
-| `error` | Anything else: an Atlas storage or schema error, an unusable feed answer | The error message |
+| `error` | Anything else: an Atlas storage or schema error, an unusable feed answer, or a panel that failed | The error message |
 
-In a dashboard embed, each panel reports its own feed state inside its card as in the full
-app, and the root reports the most urgent: `offline`, then `waiting`, then `ready`.
+`loading` lasts until every BI panel has answered, so `ready` means their results are shown.
+
+**One panel failing (dashboard embed).** Each panel reports inside its own card as in the
+full app, and the layout stays. A panel that cannot render (say a bad saved transform) shows
+"Could not render this panel" with Retry; a feed error shows `AEP BI error: <message>`. The
+others keep working. The root reports the most urgent across panels: `error`, then `offline`,
+then `waiting`, then `ready`, and returns to `ready` once the panel recovers.
+
+**A dashboard's vault no longer exists.** This is not `unknown_vault`, because the stored
+layout is still real: the root is `error`, the panels asking that vault show the feed's
+message in their cards, the status line names it, and panels of other vaults keep working.
+
+**Waiting retries run out.** After the first read, the panel retries `result_not_ready` three
+times, one second apart, then stops. The state stays `waiting` with no alert, and only the
+panel's Refresh button (↻) or changing a parameter asks again; the 15-second polls do not.
+A result computed after that stays unseen until then. So a slow script result can leave a
+frame on `waiting`: AEP should say nothing is wrong and leave the frame up, not fall back.
 
 ## Behaviour
 

@@ -5,6 +5,7 @@
 - 伺服器不主動存取外部資料源，不提供任意檔案瀏覽或 URL proxy。
 - Dashboard 存入 repository 外的使用者資料目錄，預設目錄／檔案權限限制為本機使用者。
 - 後端檢查 Host／Origin，避免一般跨站寫入與 DNS rebinding；開發模式只允許明確指定的 origin。
+- `/embed/*` 唯讀頁面只允許 `frame-ancestors` 列出的本機 origin（預設 Agent Web）嵌入；其他路由維持 DENY。可嵌入不代表可呼叫 API：這些 origin 的瀏覽器請求讀寫 `/dashboards` 仍回 403。見 [AEP_EMBED_CONTRACT.md](AEP_EMBED_CONTRACT.md)。
 - 寫入需有 create/update precondition；重複建立及過期 ETag 回 412。
 - URL 不允許 credentials；不要把 API keys、tokens、密碼、個人資料或正式資料提交到 application packages、測試 fixtures 或 Git。
 - Text panel 使用安全的基本 Markdown 子集，不注入 HTML。互動連結僅允許 HTTP(S)。

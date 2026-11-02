@@ -55,3 +55,17 @@ Overall status: implemented but NOT done under the project's definition of done;
 - [ ] Browser acceptance of the Benchmarks dashboard, including Live during a running benchmark.
 - [x] User approved committing Codex's integration and Claude Code's benchmark additions together.
 - [x] Windows backend tests on Python 3.13.15: 35 tests OK, 7 platform skips (Claude Code, 2026-10-10).
+
+
+## Read-only embeds for AEP's chat (2026-11-02)
+
+- [x] Record the owner decisions, amending the 2026-11-01 "no embed" position.
+- [x] Server: `/embed/*` headers, configurable ancestors, `_check_origin` for framed documents.
+- [x] Contract docs/AEP_EMBED_CONTRACT.md and goldens atlas_embed_golden/ with tests.
+- [x] Embed pages for both routes; loading, offline, waiting, unknown and invalid states.
+- [x] Correct the limit key in the read-contract golden; AEP re-vendors it.
+- [x] Decide the three open states from existing behaviour and write them into the contract.
+- [x] Headless embed I1 12/12 and BI I1 regression; npm test 190/190, build, Python 53 OK (7 skips), drift.
+- [ ] AEP vendors the final contract commit and renders the iframe (AEP-owned).
+- [ ] Check framing from real Agent Web once AEP's side lands.
+- [ ] Rerun test_cross_process_compare_and_swap on a quiet machine (see VALIDATION.md).
