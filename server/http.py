@@ -27,6 +27,21 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' http: https: ws: wss:; object-src 'none'; frame-ancestors 'none'; base-uri 'none'",
 }
+# Agent Web. See docs/AEP_EMBED_CONTRACT.md; framing grants no API access.
+DEFAULT_FRAME_ANCESTORS = ("http://127.0.0.1:53583", "http://localhost:53583")
+
+
+def embed_security_headers(frame_ancestors):
+    """Headers for /embed/* documents: framable only by the exact listed origins."""
+    for origin in frame_ancestors:
+        # CSP host-source has no IPv6 form, so ::1 cannot be listed here.
+        match = re.fullmatch(r"http://(?:127\.0\.0\.1|localhost)(?::([0-9]{1,5}))?", origin)
+        if not match or (match[1] is not None and not 1 <= int(match[1]) <= 65535):
+            raise ValueError("Frame ancestors must be exact local HTTP origins on 127.0.0.1 or localhost")
+    headers = {key: value for key, value in SECURITY_HEADERS.items() if key != "X-Frame-Options"}
+    policy = headers["Content-Security-Policy"]
+    headers["Content-Security-Policy"] = policy.replace("frame-ancestors 'none'", "frame-ancestors " + " ".join(frame_ancestors))
+    return headers
 
 
 class DashboardHTTPServer(ThreadingHTTPServer):
@@ -34,7 +49,7 @@ class DashboardHTTPServer(ThreadingHTTPServer):
     block_on_close = True
     allow_reuse_address = True
 
-    def __init__(self, address, store, static_dir, allowed_origins=()):
+    def __init__(self, address, store, static_dir, allowed_origins=(), frame_ancestors=DEFAULT_FRAME_ANCESTORS):
         host, _port = address
         try:
             if not ipaddress.ip_address(host).is_loopback:
@@ -45,6 +60,8 @@ class DashboardHTTPServer(ThreadingHTTPServer):
         self.store = store
         self.static_dir = Path(static_dir)
         self.allowed_origins = frozenset(allowed_origins)
+        self.frame_ancestors = frozenset(frame_ancestors)
+        self.embed_headers = embed_security_headers(tuple(frame_ancestors))
         for origin in self.allowed_origins:
             parsed = urlsplit(origin)
             if parsed.port is not None and not 1 <= parsed.port <= 65535:
@@ -68,14 +85,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
         # Avoid logging dashboard names, query strings, or private content.
         pass
 
-    def _send(self, status, payload=b"", content_type="application/json; charset=utf-8", headers=None):
+    def _send(self, status, payload=b"", content_type="application/json; charset=utf-8", headers=None, security=SECURITY_HEADERS):
         self.close_connection = True
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(payload)))
         self.send_header("Connection", "close")
         self.send_header("Cache-Control", "no-store")
-        for key, value in SECURITY_HEADERS.items():
+        for key, value in security.items():
             self.send_header(key, value)
         for key, value in (headers or {}).items():
             self.send_header(key, value)
@@ -95,6 +112,17 @@ class DashboardHandler(BaseHTTPRequestHandler):
             raise StoreError(400, f"Duplicate {name} headers are not supported")
         return values[0] if values else None
 
+    def _framed_by_allowed_ancestor(self):
+        # A framed GET carries no Origin, so a cross-site parent is only known by its Referer.
+        if (self.command not in ("GET", "HEAD") or self.headers.get("Sec-Fetch-Mode") != "navigate"
+                or self.headers.get("Sec-Fetch-Dest") != "iframe" or not self.path.startswith("/embed/")):
+            return False
+        try:
+            referer = urlsplit(self._single_header("Referer") or "")
+        except ValueError:
+            return False
+        return f"{referer.scheme}://{referer.netloc}" in self.server.frame_ancestors
+
     def _check_origin(self):
         port = self.server.server_address[1]
         accepted_hosts = {f"127.0.0.1:{port}", f"localhost:{port}", f"[::1]:{port}"}
@@ -111,7 +139,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                       and self.headers.get("Sec-Fetch-Mode") == "navigate"
                       and self.headers.get("Sec-Fetch-Dest") == "document"
                       and not self.path.startswith("/dashboards"))
-        if self.headers.get("Sec-Fetch-Site") == "cross-site" and origin not in self.server.allowed_origins and not navigation:
+        if self.headers.get("Sec-Fetch-Site") == "cross-site" and origin not in self.server.allowed_origins and not navigation and not self._framed_by_allowed_ancestor():
             raise StoreError(403, "Cross-site requests are not allowed")
 
     def _route(self):
@@ -127,6 +155,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
             path = unquote(parsed.path, encoding="utf-8", errors="strict")
         except UnicodeError as error:
             raise StoreError(400, "Invalid UTF-8 URL") from error
+        # The raw prefix is what the page sees in location.pathname, so both agree on embed mode.
+        if parsed.path.startswith("/embed/"):
+            return "embed", None
         if path == "/dashboards":
             return "list", None
         if path.startswith("/dashboards/"):
@@ -195,7 +226,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             raise StoreError(413, "Dashboard exceeds 2 MB")
         return self._read_exact(size)
 
-    def _static(self, path):
+    def _static(self, path, security=SECURITY_HEADERS):
         if "\\" in path or any(ord(character) < 32 for character in path):
             raise StoreError(400, "Invalid static path")
         components = [part for part in path.split("/") if part]
@@ -241,7 +272,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             mime = mimetypes.guess_type(filename)[0] or "application/octet-stream"
             if filename.endswith((".js", ".mjs")):
                 mime = "text/javascript"
-            self._send(200, payload, mime)
+            self._send(200, payload, mime, security=security)
         finally:
             if descriptor is not None:
                 os.close(descriptor)
@@ -258,6 +289,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 elif route == "document":
                     payload, etag = self.server.store.get(value)
                     self._send(200, payload, headers={"ETag": etag})
+                elif route == "embed":
+                    self._static("/index.html", self.server.embed_headers)
                 else:
                     self._static(value)
             elif self.command == "PUT" and route == "document":
@@ -314,10 +347,11 @@ def main(argv=None):
     parser.add_argument("--data-dir", type=Path, help="Private 0700 directory; defaults outside source under the user data directory")
     parser.add_argument("--static-dir", type=Path, default=Path(__file__).resolve().parents[1] / "web" / "dist")
     parser.add_argument("--allow-origin", action="append", default=[], help="An exact additional local HTTP origin for a development proxy")
+    parser.add_argument("--allow-frame-ancestor", action="append", help="An exact local HTTP origin that may frame /embed/*; replaces the Agent Web defaults and grants no API access")
     args = parser.parse_args(argv)
     store = DashboardStore(args.data_dir)
     try:
-        server = DashboardHTTPServer((args.host, args.port), store, args.static_dir, args.allow_origin)
+        server = DashboardHTTPServer((args.host, args.port), store, args.static_dir, args.allow_origin, args.allow_frame_ancestor or DEFAULT_FRAME_ANCESTORS)
         host = "[::1]" if ":" in args.host else args.host
         print(f"Atlas Analysis Dashboard: http://{host}:{server.server_address[1]}/", flush=True)
         try:

@@ -1,0 +1,170 @@
+{
+  "format": "atlas.embed.example_urls/v1",
+  "base": "http://127.0.0.1:8127",
+  "reserved_query_keys": [
+    "vault",
+    "slug"
+  ],
+  "urls": [
+    {
+      "name": "saved dashboard",
+      "url": "/embed/dashboard/Mixed%20BI%20layout",
+      "route": {
+        "kind": "dashboard",
+        "name": "Mixed BI layout"
+      }
+    },
+    {
+      "name": "non-ASCII dashboard name",
+      "url": "/embed/dashboard/%E5%84%80%E8%A1%A8%E6%9D%BF",
+      "route": {
+        "kind": "dashboard",
+        "name": "儀表板"
+      }
+    },
+    {
+      "name": "dashboard name with a dot",
+      "url": "/embed/dashboard/v1.2%20layout",
+      "route": {
+        "kind": "dashboard",
+        "name": "v1.2 layout"
+      }
+    },
+    {
+      "name": "panel with default parameters",
+      "url": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "route": {
+        "kind": "panel",
+        "vault": "feed-fixture",
+        "slug": "node-coverage",
+        "params": {}
+      }
+    },
+    {
+      "name": "panel with one parameter",
+      "url": "/embed/panel?vault=feed-fixture&slug=accounts-by-region&domain=AIDC",
+      "route": {
+        "kind": "panel",
+        "vault": "feed-fixture",
+        "slug": "accounts-by-region",
+        "params": {
+          "domain": "AIDC"
+        }
+      }
+    },
+    {
+      "name": "key order does not matter",
+      "url": "/embed/panel?domain=wireless&slug=tech-updates&vault=feed-fixture",
+      "route": {
+        "kind": "panel",
+        "vault": "feed-fixture",
+        "slug": "tech-updates",
+        "params": {
+          "domain": "wireless"
+        }
+      }
+    },
+    {
+      "name": "percent-encoded text, bool and date values",
+      "url": "/embed/panel?vault=v%2F1&slug=s&q=a%20%26%20b%3D%E5%80%BC&active=true&since=2026-11-02",
+      "route": {
+        "kind": "panel",
+        "vault": "v/1",
+        "slug": "s",
+        "params": {
+          "q": "a & b=值",
+          "active": "true",
+          "since": "2026-11-02"
+        }
+      }
+    },
+    {
+      "name": "plus decodes to a space, as in form encoding",
+      "url": "/embed/panel?vault=v&slug=s&q=a+b",
+      "route": {
+        "kind": "panel",
+        "vault": "v",
+        "slug": "s",
+        "params": {
+          "q": "a b"
+        }
+      }
+    },
+    {
+      "name": "an empty value is a value",
+      "url": "/embed/panel?vault=v&slug=s&q=",
+      "route": {
+        "kind": "panel",
+        "vault": "v",
+        "slug": "s",
+        "params": {
+          "q": ""
+        }
+      }
+    },
+    {
+      "name": "missing vault",
+      "url": "/embed/panel?slug=s",
+      "route": {
+        "kind": "invalid",
+        "reason": "missing_vault"
+      }
+    },
+    {
+      "name": "missing slug",
+      "url": "/embed/panel?vault=v",
+      "route": {
+        "kind": "invalid",
+        "reason": "missing_slug"
+      }
+    },
+    {
+      "name": "repeated parameter",
+      "url": "/embed/panel?vault=v&slug=s&q=a&q=b",
+      "route": {
+        "kind": "invalid",
+        "reason": "duplicate_param"
+      }
+    },
+    {
+      "name": "repeated reserved key",
+      "url": "/embed/panel?vault=v&vault=w&slug=s",
+      "route": {
+        "kind": "invalid",
+        "reason": "duplicate_param"
+      }
+    },
+    {
+      "name": "dashboard without a name",
+      "url": "/embed/dashboard/",
+      "route": {
+        "kind": "invalid",
+        "reason": "missing_name"
+      }
+    },
+    {
+      "name": "malformed name encoding",
+      "url": "/embed/dashboard/%E5%84",
+      "route": {
+        "kind": "invalid",
+        "reason": "malformed_name"
+      }
+    },
+    {
+      "name": "dashboard path with extra segments",
+      "url": "/embed/dashboard/a/b",
+      "route": {
+        "kind": "invalid",
+        "reason": "unknown_route"
+      }
+    },
+    {
+      "name": "unknown embed route",
+      "url": "/embed/editor",
+      "route": {
+        "kind": "invalid",
+        "reason": "unknown_route"
+      }
+    }
+  ]
+}

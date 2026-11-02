@@ -134,3 +134,37 @@ array/geometry order differences, an ID tie and a later duplicate. Preserve JSON
 bytes with Git attributes; AEP vendors these files from the committed producer.
 Rejected: modifying security headers, reading personal stores, a new schema or
 export endpoint, relying on array order, or resolving duplicates arbitrarily.
+
+## 2026-11-02 — Embed read-only Atlas pages in AEP's chat (amends 2026-11-01 "no embed")
+
+Owner decisions, relayed by the BI orchestrator. These amend the 2026-11-01 position
+that AEP's chat shows its own self-contained chart and never an Atlas link or frame
+(AEP `BI_CHAT_CHARTS_AND_DASHBOARD_SOURCES.md` §1(a), and every security header here
+having been DENY); that record stays as history.
+
+1. A general AEP AI chat embeds REAL Atlas panels or dashboards in the conversation by
+   iframe. When Atlas is not running, AEP falls back to its own chart; that is AEP's work.
+2. Atlas layouts stay personal. AEP never writes Atlas dashboards (no PUT from AEP).
+
+Choices made to implement them; the contract is AEP_EMBED_CONTRACT.md:
+
+- `/embed/*` is a server route, not the static fallback, because a valid dashboard name
+  may contain a dot, which the static route treats as a missing file. It matches the raw
+  path prefix, so a `/%65mbed/` request cannot get framable headers while the page, which
+  reads the same raw pathname, would start the full editor.
+- Frame ancestors are a separate setting (`--allow-frame-ancestor`, replacing the Agent Web
+  defaults) from `--allow-origin`. Reusing the latter would have given every framing parent
+  write access to `/dashboards`. Rejected for that reason.
+- A framed GET carries no Origin, so a cross-site parent (`localhost` framing `127.0.0.1`)
+  is identified by the Referer's origin; a missing Referer is refused. Agent Web sends
+  `Referrer-Policy: no-referrer`, so the contract requires `referrerpolicy="origin"` on the
+  iframe. Rejected: passing every cross-site iframe and relying on `frame-ancestors` alone.
+  It would also be safe in a browser, because the body is a static page, but the coordinator
+  asked that cross-site stay refused, and failing closed costs AEP one attribute.
+- postMessage's target is the parent's own origin (`location.ancestorOrigins`, else the
+  `document.referrer` origin), which `frame-ancestors` has already limited. It never posts to
+  `*`. Rejected: having the server inject the allowed list into the page, which adds a moving
+  part to a static file for no extra guarantee.
+- An unknown or invalid panel URL parameter is refused with a clear state instead of falling
+  back to the default, so a link in a conversation cannot silently show other data than the
+  AI said. The reconcile fallback still applies after a republish, as in the app.

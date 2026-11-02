@@ -1,0 +1,148 @@
+{
+  "format": "atlas.embed.access_decisions/v1",
+  "cases": [
+    {
+      "name": "server-side availability probe",
+      "method": "HEAD",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {},
+      "status": 200
+    },
+    {
+      "name": "framed by Agent Web on the same host (same-site, no Referer needed)",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "same-site"
+      },
+      "status": 200
+    },
+    {
+      "name": "framed cross-site by an allowed ancestor, referrerpolicy=origin",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "http://localhost:53583/"
+      },
+      "status": 200
+    },
+    {
+      "name": "framed cross-site with no Referer (Agent Web's no-referrer, no iframe attribute)",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "cross-site"
+      },
+      "status": 403
+    },
+    {
+      "name": "framed cross-site by another site",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "https://example.com/"
+      },
+      "status": 403
+    },
+    {
+      "name": "framed cross-site by a loopback origin that is not an ancestor",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "http://localhost:60000/"
+      },
+      "status": 403
+    },
+    {
+      "name": "cross-site object/embed element",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "embed",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "http://localhost:53583/"
+      },
+      "status": 403
+    },
+    {
+      "name": "cross-site fetch of an embed page",
+      "method": "GET",
+      "path": "/embed/panel?vault=feed-fixture&slug=node-coverage",
+      "headers": {
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "http://localhost:53583/"
+      },
+      "status": 403
+    },
+    {
+      "name": "framing a non-embed page cross-site",
+      "method": "GET",
+      "path": "/some/page",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "http://localhost:53583/"
+      },
+      "status": 403
+    },
+    {
+      "name": "framing the dashboards API cross-site",
+      "method": "GET",
+      "path": "/dashboards",
+      "headers": {
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "http://localhost:53583/"
+      },
+      "status": 403
+    },
+    {
+      "name": "browser fetch from Agent Web to the dashboards API",
+      "method": "GET",
+      "path": "/dashboards",
+      "headers": {
+        "Origin": "http://localhost:53583"
+      },
+      "status": 403
+    },
+    {
+      "name": "write from Agent Web",
+      "method": "PUT",
+      "path": "/dashboards/Written",
+      "headers": {
+        "Origin": "http://localhost:53583",
+        "Content-Type": "application/json",
+        "If-None-Match": "*"
+      },
+      "status": 403,
+      "body": "{\"applicationId\": \"aep_bi\", \"id\": \"mixed-bi-overview\", \"panels\": [{\"datasource\": {\"id\": \"aep.bi.result\"}, \"display\": {\"aepBi\": true}, \"id\": \"bi-region\", \"layout\": {\"h\": 8, \"w\": 6, \"x\": 6, \"y\": 0}, \"mapping\": {}, \"query\": {\"params\": {\"domain\": \"robotics\"}, \"slug\": \"accounts-by-region\", \"vault\": \"feed-fixture\"}, \"title\": \"accounts-by-region\", \"transform\": [{\"count\": 5, \"op\": \"limit\"}], \"type\": \"table\"}, {\"datasource\": {\"id\": \"synthetic.rows\"}, \"display\": {\"aepBi\": true}, \"id\": \"non-aep\", \"layout\": {\"h\": 8, \"w\": 6, \"x\": 0, \"y\": 0}, \"mapping\": {}, \"query\": {\"params\": {\"domain\": \"robotics\"}, \"slug\": \"not-an-analysis\", \"vault\": \"feed-fixture\"}, \"title\": \"not-an-analysis\", \"transform\": [{\"count\": 5, \"op\": \"limit\"}], \"type\": \"table\"}, {\"datasource\": {\"id\": \"aep.bi.result\"}, \"display\": {\"aepBi\": true}, \"id\": \"bi-coverage\", \"layout\": {\"h\": 8, \"w\": 6, \"x\": 6, \"y\": 0}, \"mapping\": {}, \"query\": {\"params\": {\"domain\": \"robotics\"}, \"slug\": \"node-coverage\", \"vault\": \"feed-fixture\"}, \"title\": \"node-coverage\", \"transform\": [{\"count\": 5, \"op\": \"limit\"}], \"type\": \"table\"}, {\"datasource\": {\"id\": \"aep.bi.result\"}, \"display\": {\"aepBi\": true}, \"id\": \"bi-tech\", \"layout\": {\"h\": 8, \"w\": 6, \"x\": 0, \"y\": 0}, \"mapping\": {}, \"query\": {\"params\": {\"domain\": \"robotics\"}, \"slug\": \"tech-updates\", \"vault\": \"feed-fixture\"}, \"title\": \"tech-updates\", \"transform\": [{\"count\": 5, \"op\": \"limit\"}], \"type\": \"table\"}, {\"datasource\": {\"id\": \"aep.bi.result\"}, \"display\": {\"aepBi\": true}, \"id\": \"bi-other-vault\", \"layout\": {\"h\": 8, \"w\": 6, \"x\": 0, \"y\": 0}, \"mapping\": {}, \"query\": {\"params\": {\"domain\": \"robotics\"}, \"slug\": \"node-coverage\", \"vault\": \"other-vault\"}, \"title\": \"node-coverage\", \"transform\": [{\"count\": 5, \"op\": \"limit\"}], \"type\": \"table\"}, {\"datasource\": {\"id\": \"aep.bi.result\"}, \"display\": {\"aepBi\": true}, \"id\": \"bi-coverage-copy\", \"layout\": {\"h\": 8, \"w\": 6, \"x\": 0, \"y\": 20}, \"mapping\": {}, \"query\": {\"params\": {\"domain\": \"robotics\"}, \"slug\": \"node-coverage\", \"vault\": \"feed-fixture\"}, \"title\": \"node-coverage\", \"transform\": [{\"count\": 5, \"op\": \"limit\"}], \"type\": \"table\"}], \"schemaVersion\": 2, \"title\": \"Mixed BI layout\", \"values\": {\"bi:vault\": \"feed-fixture\"}, \"variables\": []}"
+    },
+    {
+      "name": "delete from Agent Web",
+      "method": "DELETE",
+      "path": "/dashboards/Mixed%20BI%20layout",
+      "headers": {
+        "Origin": "http://localhost:53583"
+      },
+      "status": 403
+    }
+  ]
+}

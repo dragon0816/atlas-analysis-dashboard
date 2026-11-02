@@ -1,3 +1,4 @@
 # Preserve producer golden bytes across Git checkouts on Windows.
 web/tests/fixtures/aep_bi/*.json -text
 web/tests/fixtures/atlas_dashboard_golden/*.json -text
+web/tests/fixtures/atlas_embed_golden/*.json -text
