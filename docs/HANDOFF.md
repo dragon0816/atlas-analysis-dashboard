@@ -44,8 +44,8 @@ platform skips); drift 17 files; embed I1 12/12; BI I1 6/6 plus the republish st
 4. Existing behaviour, not changed here: reconcile appends any published analysis missing from a
    saved board, so a dashboard kept to a subset of analyses grows in the view, in the app and in
    an embed. This may surprise someone embedding a chosen subset; raise it with the owner.
-5. Both I1 runners need `NO_COLOR` for Vite only where colours are forced (the BI runner sets it).
-   Running ports 53611-53614 and 5179 must be free, and I1s must not overlap.
+5. The I1 runners share port 53611 and must not overlap. The embed runner also needs 53612-53614
+   and ATLAS_PYTHON set to Python 3.13+ on Windows; the BI runner needs 5179.
 
 ## Next steps
 
