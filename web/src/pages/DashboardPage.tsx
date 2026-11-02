@@ -5,6 +5,8 @@ import { AepControls } from '../components/aep/AepControls';
 import { AepBiProvider } from '../platform/aep/bi';
 import { BiControls } from '../components/aep/BiControls';
 import { reconcileBiDashboard } from '../platform/aep/biDashboard';
+import { ImportDashboardDialog } from '../components/dashboard/ImportDashboardDialog';
+import { MAX_DASHBOARD_FILE_BYTES, downloadDashboard, importNameFor, parseDashboardFile } from '../platform/dashboardFile';
 import { PlatformRuntime } from "../platform/runtime";
 import { retain } from "../platform/retain";
 import { PANEL_LIBRARY } from "../platform/catalog";
@@ -63,6 +65,8 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
   const [newOrigin, setNewOrigin] = useState<{ board: DashboardDocument; values: VariableValues; name: string; revision: string | null } | null>(null);
   const [saveAs, setSaveAs] = useState(false);
   const [saveName, setSaveName] = useState("");
+  const [importing, setImporting] = useState<{ document: DashboardDocument; name: string } | null>(null);
+  const importInput = useRef<HTMLInputElement>(null);
   const [settings, setSettings] = useState(false);
   const [highlight, setHighlight] = useState<string[]>([]);
   const aepProvider = useMemo(() => application?.id === 'aep_harness' ? new AepProvider() : null, [application]);
@@ -104,6 +108,15 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
       const etag = await persistDashboard(name.trim(), doc, revision, create);
       setNewOrigin(null); setCheckpoint(null); setCheckpointValues({}); setBoard(doc); setSavedName(name.trim()); setRevision(etag); setEditing(false); setSelected(null); setSaveAs(false); setSettings(false); setStatus(`Saved “${name.trim()}”. Preview mode.`); refreshNames();
     } catch (ex) { setStatus(`Save failed: ${String(ex)}`); } finally { mutationInFlight.current = false; setBusy(false); }
+  };
+  const chooseImportFile = async (file: File | undefined) => {
+    if (importInput.current) importInput.current.value = "";
+    if (!file) return;
+    try {
+      if (file.size > MAX_DASHBOARD_FILE_BYTES) throw new Error("Dashboard exceeds 2 MB");
+      const document = parseDashboardFile(await file.text(), applications.map(app => app.id));
+      setStatus(""); setImporting({ document, name: importNameFor(file.name, document) });
+    } catch (ex) { setStatus(`Could not import “${file.name}”: ${ex instanceof Error ? ex.message : String(ex)}`); }
   };
   const addAnalysis = (slug: string, catalog: Parameters<typeof reconcileBiDashboard>[2]) => {
     if (!board) return;
@@ -186,7 +199,7 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
   if (!application || !board || !runtime) return <div className="atlas-platform p-8"><h1 className="text-xl">Dashboard applications</h1><p>No valid application packages are available.</p>{applicationPackages.errors.map(error => <p role="alert" key={error}>{error}</p>)}</div>;
   return <div className="atlas-platform"><header className="atlas-workspace-header">
       <div className="atlas-workspace-title"><h1>{board.title}</h1><span className={`atlas-mode ${editing ? "is-editing" : ""}`}>{editing ? "EDIT MODE" : "PREVIEW"}</span>{dirty && <span className="text-xs text-amber-300">Unsaved</span>}{application.demo && <span className="atlas-demo-label">Synthetic data</span>}</div>
-      <div className="atlas-toolbar"><button type="button" className="atlas-button" disabled={busy} onClick={create}>+ New dashboard</button>{!editing ? <button className="atlas-button primary" disabled={busy} onClick={beginEditing}>Edit Dashboard</button> : <><button className="atlas-button primary" disabled={busy} title="Save changes and return to Preview mode" onClick={() => savedName ? void save(savedName, false) : askSaveAs()}>Save</button><button className="atlas-button" disabled={busy} onClick={cancel}>Cancel</button><button className={`atlas-button ${settings ? "active" : ""}`} onClick={() => setSettings(s => !s)}>Dashboard settings</button></>}<button className="atlas-button" disabled={busy} onClick={askSaveAs}>Save As</button><button className="atlas-button" onClick={() => setRefreshKey(k => k + 1)}>↻ Refresh</button></div>
+      <div className="atlas-toolbar"><button type="button" className="atlas-button" disabled={busy} onClick={create}>+ New dashboard</button>{!editing ? <button className="atlas-button primary" disabled={busy} onClick={beginEditing}>Edit Dashboard</button> : <><button className="atlas-button primary" disabled={busy} title="Save changes and return to Preview mode" onClick={() => savedName ? void save(savedName, false) : askSaveAs()}>Save</button><button className="atlas-button" disabled={busy} onClick={cancel}>Cancel</button><button className={`atlas-button ${settings ? "active" : ""}`} onClick={() => setSettings(s => !s)}>Dashboard settings</button></>}<button className="atlas-button" disabled={busy} onClick={askSaveAs}>Save As</button><button className="atlas-button" disabled={busy || editing} onClick={() => importInput.current?.click()}>Import</button><input ref={importInput} type="file" accept=".json,application/json" aria-label="Dashboard file to import" hidden onChange={event => void chooseImportFile(event.target.files?.[0])} /><button className="atlas-button" disabled={busy || editing} onClick={() => downloadDashboard({ ...board, values }, savedName || board.title)}>Export</button><button className="atlas-button" onClick={() => setRefreshKey(k => k + 1)}>↻ Refresh</button></div>
     </header>
     <div className="atlas-control-strip">
       <button className={`atlas-button atlas-disclosure ${controls.dashboards ? "active" : ""}`} aria-expanded={controls.dashboards} aria-controls="atlas-dashboard-controls" onClick={() => setControls(prev => ({ ...prev, dashboards: !prev.dashboards }))}><span aria-hidden="true">{controls.dashboards ? "▾" : "▸"}</span> Dashboards</button>
@@ -204,6 +217,7 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
       {editing && settings ? <aside className="atlas-properties"><div className="atlas-side-heading">Dashboard settings</div><div className="space-y-4 p-4"><Field label="Title"><input className="atlas-control" value={board.title} onChange={e => setBoard({ ...board, title: e.target.value })} /></Field><Field label="Description"><textarea className="atlas-control" value={board.description ?? ""} onChange={e => setBoard({ ...board, description: e.target.value })} /></Field><JsonEditor label="Global variables" value={board.variables} onApply={v => { if (!Array.isArray(v) || v.some(x => !x || typeof x.id !== "string") || new Set(v.map(x => x.id)).size !== v.length) throw new Error("Expected variables with unique ids"); setBoard({ ...board, variables: v }); }} /><p className="text-xs text-slate-400">Source bindings map variable names to fields. Each variable updates every panel that uses a bound source.</p></div></aside> : editing && activePanel ? <PanelProperties key={activePanel.id} panel={activePanel} application={application} dataset={datasets[activePanel.id]} onChange={updatePanel} onDuplicate={() => { const copy = { ...clone(activePanel), id: uniqueId(), title: `${activePanel.title} copy`, layout: nextPanelLayout(board.panels, activePanel.layout.w, activePanel.layout.h) }; setBoard({ ...board, panels: [...board.panels, copy] }); setSelected(copy.id); }} onRemove={() => removePanel(activePanel.id)} /> : editing ? <aside className="atlas-properties"><div className="atlas-side-heading">Properties</div><p className="p-4 text-sm text-slate-400">Select a panel to configure its source, transforms, mapping and interactions.</p></aside> : null}
     </div>
     {saveAs && <div className="atlas-modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget && !busy) setSaveAs(false); }}><section className="atlas-modal" role="dialog" aria-modal="true" aria-label="Save dashboard as"><h2>{newOrigin ? "Save new dashboard" : "Save As"}</h2><p>Name this dashboard, then save to return to Preview mode. Existing names are protected from overwrite.</p>{status.startsWith("Save failed:") && <p role="alert" className="text-rose-300">{status}</p>}<form onSubmit={e => { e.preventDefault(); void save(saveName, true); }}><Field label="Dashboard name"><input className="atlas-control" autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Escape" && !busy) setSaveAs(false); }} maxLength={120} required /></Field><div className="mt-5 flex justify-end gap-2"><button type="button" className="atlas-button" disabled={busy} onClick={() => setSaveAs(false)}>Cancel</button><button className="atlas-button primary" disabled={busy || !saveName.trim()}>Save and preview</button></div></form></section></div>}
+    {importing && <ImportDashboardDialog document={importing.document} initialName={importing.name} onCancel={() => setImporting(null)} onImported={name => { setImporting(null); refreshNames(); void openSaved(name); }} />}
     {details && <DetailsDialog details={details} datasets={datasets} onClose={() => setDetails(null)} />}
   </div>;
 }

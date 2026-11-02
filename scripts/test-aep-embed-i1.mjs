@@ -86,7 +86,9 @@ store.close()
   const working = mixed.panels.filter(panel => panel.datasource.id === 'aep.bi.result' && panel.query.vault === catalog.vault);
   const coverage = working.find(panel => panel.id === 'bi-coverage');
   const broken = { ...mixed, values: { 'bi:vault': 'no-such-vault' }, panels: [coverage, { ...coverage, id: 'bad-transform', transform: [{ op: 'limit', n: -1 }], layout: { ...coverage.layout, x: 0, y: 8 } }, { ...coverage, id: 'gone-vault', query: { ...coverage.query, vault: 'no-such-vault' }, layout: { ...coverage.layout, x: 6, y: 8 } }] };
-  await writeFile(join(temporary, 'dashboard.json'), JSON.stringify({ 'Embed fixture': { ...mixed, panels: working }, 'Broken panels': broken }));
+  // A saved subset: one current analysis, plus one the feed no longer publishes.
+  const subset = { ...mixed, panels: [{ ...coverage, layout: { x: 0, y: 0, w: 6, h: 8 } }, { ...coverage, id: 'bi-unpublished', title: 'Unpublished', query: { ...coverage.query, slug: 'no-longer-published' }, layout: { x: 6, y: 0, w: 6, h: 8 } }] };
+  await writeFile(join(temporary, 'dashboard.json'), JSON.stringify({ 'Embed fixture': { ...mixed, panels: working }, 'Broken panels': broken, Subset: subset }));
   const seeded = start(python, ['-B', '-c', seed, data, join(temporary, 'dashboard.json')], root);
   await once(seeded, 'exit'); assert.equal(seeded.exitCode, 0, seeded.output);
   const allowed = [`http://127.0.0.1:${ALLOWED_PORT}`, `http://localhost:${ALLOWED_PORT}`];
@@ -277,6 +279,128 @@ store.close()
   assert.equal(parent, null);
   await shot('06-refused-ancestor');
   pass('other ancestor', 'same-site parent not in frame-ancestors: the browser did not render the embed');
+
+  // A saved dashboard is what was saved: no analysis arrives by itself, in an embed or in the app.
+  const stored = async name => (await fetch(`${ATLAS}/dashboards/${encodeURIComponent(name)}`)).json();
+  const panelIds = expression => expression(`[...document.querySelectorAll('[data-panel-id]')].map(el=>el.dataset.panelId)`);
+  const titleOf = slug => catalog.analyses.find(item => item.slug === slug).title;
+  await open(sameSite, '/embed/dashboard/Subset');
+  await reach('ready');
+  assert.deepEqual(await panelIds(inFrame), ['bi-coverage'], 'unpublished removed, nothing appended');
+  assert.equal(await inFrame(`document.querySelector('[data-panel-id="bi-coverage"] h2').textContent`), titleOf('node-coverage'), 'a stale panel still updates');
+  assert.equal((await stored('Subset')).panels.length, 2, 'an embed reconciles in memory only');
+  pass('saved subset in an embed', 'one panel of three, updated from the catalog; unpublished one removed in memory; stored document untouched');
+
+  assert.deepEqual(writes, [], 'no embed page has written so far');
+  const appUrl = `${ATLAS}/`;
+  const openApp = async () => { await send('Page.navigate', { url: appUrl }); await until(async () => (await top('location.href')) === appUrl && await top(`!!document.querySelector('#atlas-dashboard-controls select option[value="aep_bi"]')`), 'Atlas app loaded'); };
+  const choose = (select, value) => top(`(() => { const el = ${select}; if (!el) throw new Error('Missing select'); el.value = ${JSON.stringify(value)}; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  const controlSelect = index => `document.querySelectorAll('#atlas-dashboard-controls select')[${index}]`;
+  const addPicker = `[...document.querySelectorAll('[aria-label="AEP BI controls"] label')].find(l=>l.textContent.startsWith('Add analysis'))?.querySelector('select')`;
+  const clickButton = label => top(`(() => { const el = [...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(label)}); if (!el) throw new Error('Missing button ' + ${JSON.stringify(label)}); el.click(); })()`);
+
+  // The unsaved live board keeps showing everything.
+  await openApp();
+  await choose(controlSelect(0), 'aep_bi');
+  await until(() => top(`!!document.querySelector('[aria-label="AEP BI controls"] option[value="${catalog.vault}"]')`), 'vault listed');
+  await choose(`document.querySelector('[aria-label="AEP BI controls"] select')`, catalog.vault);
+  await until(async () => JSON.stringify(await panelIds(top)) === JSON.stringify(catalog.order.map(slug => `bi-${slug}`)), 'live board in feed order');
+  assert.equal(await top(`!!${addPicker}`), false);
+  pass('live board', 'choosing a vault shows every analysis in feed order, with no picker');
+
+  // Open the saved subset in the app; add by hand through the editor.
+  await choose(controlSelect(2), 'Subset');
+  await until(async () => JSON.stringify(await panelIds(top)) === JSON.stringify(['bi-coverage']), 'saved subset in the app');
+  await until(() => top(`!!${addPicker}`), 'add analysis picker');
+  assert.deepEqual(await top(`[...${addPicker}.options].slice(1).map(o=>o.value)`), ['accounts-by-region', 'tech-updates']);
+  await delay(16500);
+  assert.deepEqual(await panelIds(top), ['bi-coverage'], 'still a subset after the next catalog poll');
+  await choose(addPicker, 'accounts-by-region');
+  await until(async () => (await panelIds(top)).includes('bi-accounts-by-region'), 'hand-picked panel');
+  assert.match(await top(`document.querySelector('.atlas-mode').textContent`), /EDIT MODE/);
+  await clickButton('Cancel');
+  await until(async () => JSON.stringify(await panelIds(top)) === JSON.stringify(['bi-coverage']), 'Cancel removes the hand-picked panel');
+  assert.equal((await stored('Subset')).panels.length, 2, 'Cancel wrote nothing');
+  await choose(addPicker, 'accounts-by-region');
+  await until(async () => (await panelIds(top)).includes('bi-accounts-by-region'), 'hand-picked panel again');
+  await clickButton('Save');
+  await until(async () => JSON.stringify((await stored('Subset')).panels.map(panel => panel.query.slug)) === JSON.stringify(['node-coverage', 'accounts-by-region']), 'Save stores the choice');
+  pass('saved subset in the app', 'stays a subset across a catalog poll; the picker adds through the editor, Cancel undoes it, Save stores it');
+
+  // Export writes a real file, which imports again; a name in use is never overwritten silently.
+  const downloads = join(temporary, 'downloads');
+  await send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads });
+  await until(() => top(`[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Export')?.disabled === false`), 'preview mode');
+  await clickButton('Export');
+  const exportedPath = join(downloads, 'Subset.json');
+  const exportedText = await until(() => readFile(exportedPath, 'utf8'), 'downloaded file');
+  assert.deepEqual(JSON.parse(exportedText).panels.map(panel => panel.query.slug), ['node-coverage', 'accounts-by-region']);
+  assert.deepEqual(JSON.parse(exportedText), await stored('Subset'), 'the exported file is the GET body as a document, unwrapped');
+  const chooseFile = async path => { const { result } = await send('Runtime.evaluate', { expression: `document.querySelector('input[aria-label="Dashboard file to import"]')` }); await send('DOM.setFileInputFiles', { files: [path], objectId: result.objectId }); };
+  const dialogOpen = () => top(`!!document.querySelector('[aria-label="Import dashboard"]')`);
+  const rename = name => top(`(() => { const el = document.querySelector('[aria-label="Import dashboard"] input'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, ${JSON.stringify(name)}); el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  const importFile = `document.querySelector('[aria-label="Import dashboard"] button.primary').click()`;
+  const storedSubset = JSON.stringify(await stored('Subset'));
+  await chooseFile(exportedPath);
+  await until(dialogOpen, 'import dialog');
+  assert.equal(await top(`document.querySelector('[aria-label="Import dashboard"] input').value`), 'Subset');
+  await top(importFile);
+  await until(() => top(`document.querySelector('[aria-label="Import dashboard"] [role="alert"]')?.textContent.includes('already exists') ?? false`), 'name in use');
+  assert.equal(JSON.stringify(await stored('Subset')), storedSubset, 'a name in use is not overwritten');
+  await rename('Imported copy');
+  await top(importFile);
+  await until(async () => (await top(controlSelect(2) + '.value')) === 'Imported copy', 'imported dashboard opened');
+  assert.equal(await dialogOpen(), false);
+  assert.deepEqual((await stored('Imported copy')).panels.map(panel => panel.query.slug), ['node-coverage', 'accounts-by-region']);
+  pass('export and import', 'a real downloaded file equals the GET body as a document and imports again; the name in use was refused and kept; the new name opened in the app');
+
+  // Explicit replace.
+  const replacement = join(temporary, 'Subset.json');
+  await writeFile(replacement, JSON.stringify({ ...JSON.parse(exportedText), title: 'Replaced title' }));
+  await chooseFile(replacement);
+  await until(dialogOpen, 'import dialog for replace');
+  await top(importFile);
+  await until(() => top(`[...document.querySelectorAll('[aria-label="Import dashboard"] button')].some(b=>b.textContent==='Replace existing')`), 'replace offered');
+  assert.equal(JSON.stringify(await stored('Subset')), storedSubset);
+  await clickButton('Replace existing');
+  await until(async () => (await stored('Subset')).title === 'Replaced title', 'explicit replace stored');
+  await until(async () => (await top(`document.querySelector('h1').textContent`)) === 'Replaced title', 'replaced dashboard opened');
+  pass('explicit replace', 'Replace existing stored the file with If-Match and opened it');
+
+  // Invalid files are refused with a message, and nothing opens or is stored.
+  const namesBefore = await (await fetch(`${ATLAS}/dashboards`)).json();
+  for (const [file, text, message] of [['bad.json', '{oops', 'not valid JSON'], ['old.json', JSON.stringify({ ...JSON.parse(exportedText), schemaVersion: 1 }), 'schemaVersion'], ['other.json', JSON.stringify({ ...JSON.parse(exportedText), applicationId: 'other-app' }), 'not installed']]) {
+    const path = join(temporary, file);
+    await writeFile(path, text);
+    await chooseFile(path);
+    await until(() => top(`[...document.querySelectorAll('.atlas-status')].some(el => el.textContent.includes(${JSON.stringify(file)}) && el.textContent.includes(${JSON.stringify(message)}))`), `refusal of ${file}`);
+    assert.equal(await dialogOpen(), false);
+  }
+  assert.deepEqual(await (await fetch(`${ATLAS}/dashboards`)).json(), namesBefore);
+  pass('invalid files', 'bad JSON, another schema version and an uninstalled application are each refused with a message; nothing stored');
+
+  // A file naming things this PC lacks: it imports, and each panel fails alone.
+  const brokenFile = join(temporary, 'Imported broken.json');
+  await writeFile(brokenFile, JSON.stringify(await stored('Broken panels')));
+  await chooseFile(brokenFile);
+  await until(dialogOpen, 'import dialog for the broken file');
+  await top(importFile);
+  await until(async () => (await top(controlSelect(2) + '.value')) === 'Imported broken', 'broken file opened');
+  await until(() => top(`/AEP BI error:.*no-such-vault/s.test(document.querySelector('[data-panel-id="gone-vault"]')?.textContent ?? '')`), 'error card in the app');
+  await shot('08-imported-in-app');
+  assert.deepEqual(exceptions, []);
+  for (const write of writes) assert.match(write, new RegExp(`^PUT ${ATLAS}/dashboards/`), 'the app only writes dashboards');
+  writes.length = 0;
+
+  // Both imports open at their embed address; embeds stay read-only.
+  await open(sameSite, '/embed/dashboard/Imported%20copy');
+  await reach('ready');
+  assert.deepEqual([...await panelIds(inFrame)].sort(), ['bi-accounts-by-region', 'bi-coverage']);
+  await open(sameSite, '/embed/dashboard/Imported%20broken');
+  await reach('error');
+  assert.match(await until(() => inFrame(`document.querySelector('[data-panel-id="gone-vault"]').textContent`), 'gone vault card'), /AEP BI error:.*no-such-vault/s);
+  await until(async () => JSON.stringify(await panelRows('coverage')) === JSON.stringify(expected.slice(0, 5)), 'working panel of the imported file');
+  pass('imported dashboards embed', 'an imported dashboard opens at /embed/dashboard/<name>; a missing vault stays its own error card beside a working panel');
 
   // Stopping AEP keeps the last data, and the frame says offline.
   await open(sameSite, PANEL);
