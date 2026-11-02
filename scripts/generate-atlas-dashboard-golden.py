@@ -17,7 +17,7 @@ def bi_panel(panel_id, slug, x, y, *, vault="feed-fixture"):
         "id": panel_id, "title": slug, "type": "table",
         "datasource": {"id": "aep.bi.result"},
         "query": {"vault": vault, "slug": slug, "params": {"domain": "robotics"}},
-        "transform": [{"op": "limit", "count": 5}], "mapping": {},
+        "transform": [{"op": "limit", "n": 5}], "mapping": {},
         "display": {"aepBi": True}, "layout": {"x": x, "y": y, "w": 6, "h": 8},
     }
 

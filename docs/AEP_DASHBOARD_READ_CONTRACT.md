@@ -1,6 +1,8 @@
 # Atlas dashboard read contract for AEP
 
-Revision: 2026-11-01. Producer: Atlas; consumer: AEP Knowledge-page import.
+Revision: 2026-11-01, fixture corrected 2026-11-02 (`dashboard-mixed.json` now uses the valid
+`limit` key `n`; no contract change, re-vendor the bytes). Producer: Atlas; consumer: AEP
+Knowledge-page import.
 This documents the existing schemaVersion 2 API. No new route or schema field.
 Atlas owns personal layout; AEP imports only an analysis order into its vault and
 computes hidden itself. This does not authorize AEP to write to Atlas.
