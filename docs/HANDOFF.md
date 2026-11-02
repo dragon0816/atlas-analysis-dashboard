@@ -1,4 +1,4 @@
-# Handoff — Read-only Atlas embeds for AEP's chat (2026-11-02)
+# Handoff — Read-only Atlas embeds, saved boards and dashboard files (2026-11-02)
 
 ## Goal and boundary
 
@@ -22,12 +22,18 @@ which amends the 2026-11-01 "no embed" position. Results are in VALIDATION.md, 2
 - Goldens for AEP to vendor: web/tests/fixtures/atlas_embed_golden/.
 - The read-contract golden dashboard-mixed.json: limit key corrected from `count` to `n`.
 - scripts/test-aep-embed-i1.mjs: headless check, `npm run test:aep-embed:i1`.
+- Saved boards no longer gain analyses, in the app and in embeds (DECISIONS.md, second 2026-11-02
+  entry). Live boards are unchanged. "Add analysis" in the BI controls adds one by hand, through
+  the editor.
+- Import and Export buttons (platform/dashboardFile.ts, ImportDashboardDialog). A file is the GET
+  document, unwrapped, which is what AEP's Knowledge page accepts.
 
 ## Verification
 
-All passed on the final tree: npm test 190/190; build (177 modules); Python 53 tests OK (7
-platform skips); drift 17 files; embed I1 12/12; BI I1 6/6 plus the republish stub;
-`git diff --check`. The machine was never quiet (CPU 53-100%, 33-37 python processes).
+All passed on the final tree: npm test; build (179 modules); Python 53 tests OK (7 platform skips);
+drift 17 files; embed I1 19/19; BI I1 6/6 plus the republish stub; `git diff --check`. Numbers are
+in VALIDATION.md. Goldens are unchanged since c7f9468. The machine was never quiet (CPU 53-100%,
+33-43 python processes).
 
 ## Known issues and risks
 
@@ -41,10 +47,10 @@ platform skips); drift 17 files; embed I1 12/12; BI I1 6/6 plus the republish st
    treats that message as optional.
 3. A slow script result can rest on `waiting` until Refresh, under the 2026-11-01 retry rule.
    Under load even the fixture's 2 s delay can outlast the retries.
-4. Existing behaviour, not changed here: reconcile appends any published analysis missing from a
-   saved board, so a dashboard kept to a subset of analyses grows in the view, in the app and in
-   an embed. This may surprise someone embedding a chosen subset; raise it with the owner.
-5. The I1 runners share port 53611 and must not overlap. The embed runner also needs 53612-53614
+4. A saved board meeting a real republish was only unit-tested: the fixture never publishes a second
+   version. An empty saved dashboard now stays empty, which is a consequence of the owner's rule.
+5. BI I1 failed twice before any case at CPU 100% and passed at 55%. Load is likely, not proven.
+6. The I1 runners share port 53611 and must not overlap. The embed runner also needs 53612-53614
    and ATLAS_PYTHON set to Python 3.13+ on Windows; the BI runner needs 5179.
 
 ## Next steps
@@ -52,7 +58,8 @@ platform skips); drift 17 files; embed I1 12/12; BI I1 6/6 plus the republish st
 1. AEP vendors the final contract commit's goldens, including the changed dashboard-mixed.json,
    and renders the iframe with `referrerpolicy="origin"` and no opaque sandbox.
 2. Check framing from real Agent Web once AEP's side lands. Owner-present I2 stays separate.
-3. Rerun the compare-and-swap test on a quiet machine to settle item 1.
+3. Rerun the compare-and-swap test on a quiet machine to settle item 1, and add a republish case
+   for saved boards to a browser run if item 4 matters.
 
 ## Earlier continuity
 

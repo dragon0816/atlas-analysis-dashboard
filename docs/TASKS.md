@@ -69,3 +69,12 @@ Overall status: implemented but NOT done under the project's definition of done;
 - [ ] AEP vendors the final contract commit and renders the iframe (AEP-owned).
 - [ ] Check framing from real Agent Web once AEP's side lands.
 - [ ] Rerun test_cross_process_compare_and_swap on a quiet machine (see VALIDATION.md).
+
+## Saved dashboards and dashboard files (2026-11-02)
+
+- [x] Saved boards update and remove but do not gain analyses, in the app and in embeds; live boards unchanged.
+- [x] "Add analysis" select through the existing editor.
+- [x] Import a dashboard file: schema and size checks, clear refusals, no silent overwrite, explicit replace.
+- [x] Export a dashboard file: the GET document, unwrapped; stated in AEP_DASHBOARD_READ_CONTRACT.md.
+- [x] Unit tests and embed I1 for both; contract docs updated; goldens unchanged since c7f9468.
+- [ ] Browser check that a saved board gains nothing on a real republish (see VALIDATION.md).

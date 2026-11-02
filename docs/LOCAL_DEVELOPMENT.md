@@ -34,6 +34,13 @@ After the real fixture cases, an Atlas-only local HTTP stub serves republished v
 .scratch/aep-bi-i1/. A failed run also writes failure-dom.txt and failure.png.
 This fixture acceptance is separate from the owner-present real-vault acceptance.
 
+## Dashboard files
+
+Export (toolbar, in Preview) downloads the current dashboard as a JSON file. Import reads such a file
+and asks for a name; a name in use needs another name or Replace existing. Files are limited to 2 MB,
+and the application they name must be installed. On a saved AEP BI dashboard, "Add analysis" adds a
+published analysis that is not on it; a saved dashboard does not gain them by itself.
+
 ## AEP embed pages
 
 AEP's chat frames `/embed/dashboard/<name>` and `/embed/panel?vault=&slug=`; see

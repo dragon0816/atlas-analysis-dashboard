@@ -273,3 +273,26 @@ What the runs found, each fixed at its cause with no assertion relaxed:
   so Node never exited (now a process-tree kill). A failed page test kept the test process alive
   through polling (28 minutes, stopped at the limit); pages now close after each test.
 - The BI runner never saw Vite ready where colours are forced; it now sets NO_COLOR for Vite.
+
+## 2026-11-02 — Saved dashboards and dashboard files
+
+Same environment; again not quiet (CPU 55-100%, 37-43 python processes).
+
+- Goldens: both generators rerun, with no file changed against c7f9468.
+- Python: 53 tests OK (skipped=7), 33.677 s. check:aep-bi: 17 files match.
+- npm run build: TypeScript and Vite pass, 179 modules; existing chunk warnings only.
+- npm run test:aep-embed:i1: exit 0, 19/19, 208 s. New cases: a saved subset in an embed; the live
+  board; a saved subset in the app across a poll, with the picker, Cancel and Save; a real
+  downloaded export deep-equal to the real GET body, importing again; a name in use refused and
+  kept; explicit replace; three invalid files refused; imported dashboards at /embed/dashboard/<name>,
+  with a missing vault as its own error card.
+- npm run test:aep-bi:i1: exit 0, 6/6 and the republish stub, 90 s, at CPU 55%. Its two earlier runs
+  on this tree failed before any case, at CPU 100% with about 40 python processes: "Atlas
+  application loaded" with a blank page, then a 15 s Page.navigate timeout. Checked separately:
+  Vite answered every module 200, the coldest in 6 s. No timeout or assertion changed. This points
+  to load but does not prove it. These runs can fail like this on a busy machine.
+
+Not exercised in a browser: a saved board meeting a real republish. The fixture never publishes a
+second version, so "across a poll" there sees an unchanged version and does not reconcile again.
+The first catalog load does reconcile through the same call with append off, which is what the
+browser cases prove; the republish itself is covered by unit tests of reconcile and BiControls.

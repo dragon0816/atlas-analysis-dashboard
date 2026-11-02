@@ -22,6 +22,14 @@ reconcile manages only that panel, and reports structured status). It imports no
 and keeps all state in memory. `--allow-frame-ancestor` is deliberately separate from
 `--allow-origin`: framing grants no API access.
 
+## Saved boards and dashboard files (2026-11-02)
+
+Reconcile on a saved board (DashboardPage `savedName`, or `/embed/dashboard`) updates and removes
+but does not append; the unsaved live board still appends. "Add analysis" in BiControls goes
+through the normal editor. `platform/dashboardFile.ts` and `ImportDashboardDialog` handle files:
+a file is the schemaVersion 2 document of `GET /dashboards/{name}`, unwrapped. Stored only through
+the existing PUT preconditions, so a name in use needs an explicit replace.
+
 ## 目錄
 
 ```text

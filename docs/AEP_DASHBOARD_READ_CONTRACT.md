@@ -3,7 +3,8 @@
 Revision: 2026-11-01, fixture corrected 2026-11-02 (`dashboard-mixed.json` now uses the valid
 `limit` key `n`; no contract change, re-vendor the bytes). Producer: Atlas; consumer: AEP
 Knowledge-page import.
-This documents the existing schemaVersion 2 API. No new route or schema field.
+This documents the existing schemaVersion 2 API. No new route or schema field. A dashboard file
+is that same document (see Dashboard files); no golden changes for it.
 Atlas owns personal layout; AEP imports only an analysis order into its vault and
 computes hidden itself. This does not authorize AEP to write to Atlas.
 
@@ -37,6 +38,20 @@ binds only literal loopback addresses. Foreign Host, external Origin, `Origin: n
 and unapproved cross-site requests remain 403, including cross-site requests that
 omit Origin. Same-server local Origins are accepted; additional local dev Origins
 require explicit server configuration. There is no wildcard cross-origin allowance.
+
+## Dashboard files
+
+Atlas's Export button writes exactly this document: the schemaVersion 2 object that
+`GET /dashboards/{name}` returns (the shape of `dashboard-mixed.json`), unwrapped, as UTF-8 JSON.
+AEP's Knowledge page accepts such a file and refuses a wrapper; Atlas's Import accepts it too.
+The panel identity and order rules below apply to it unchanged.
+
+It is the same document, not the same bytes: the file is indented with a final newline, while
+the HTTP body uses the store's encoding, so compare parsed JSON, not hashes. It also holds what
+was on screen at export. For a dashboard saved and unchanged since, that equals the stored
+document. In preview, it can already carry a republished analysis's reconciled title or chart,
+and the person's current parameter values in `values`. `query.vault`, `query.slug` and `layout`
+stay valid either way, and a panel whose analysis was unpublished is gone from it.
 
 ## Panel identity and order
 

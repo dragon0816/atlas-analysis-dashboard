@@ -12,6 +12,7 @@
 - 全域 filters、時間範圍、跨面板篩選、details、drill-down、graph highlight。
 - JSON、CSV、REST、WebSocket 資料來源；來源共用、取消請求、大小限制、明確的錯誤及截斷提示。
 - 順序式 filter、normalize、join、aggregate、calculate、sort、limit 與可重用 pipeline。
+- Dashboard JSON 檔案匯入／匯出；已存在的名稱不會被靜默覆寫。
 - 獨立的 Python 標準函式庫伺服器，提供靜態網頁及帶 ETag 的原子儲存。
 
 ## 快速開始

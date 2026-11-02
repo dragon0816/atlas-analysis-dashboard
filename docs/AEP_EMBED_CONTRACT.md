@@ -142,11 +142,15 @@ frame on `waiting`: AEP should say nothing is wrong and leave the frame up, not 
 
 - Panels poll and reconcile as in the app: results every 15 seconds, and the vault's
   published version every 15 seconds, updating chart, title and parameters in place.
-  A dashboard embed reconciles in memory; new published analyses appear in the view as they
-  do in the app's Preview mode, and the stored dashboard is untouched.
+  A dashboard embed reconciles in memory and the stored dashboard is untouched: panels whose
+  analysis changed update, and panels whose analysis was unpublished disappear, but a saved
+  dashboard never gains analyses by itself. It shows what was saved, so a person adds a new
+  analysis by hand in Atlas.
 - Interactions are limited to in-memory cross-panel filters and graph highlights.
   `navigate`, `open_link`, details dialogs, and all editing are off.
-- A saved dashboard of any installed application can be embedded. A non-BI dashboard shows
+- Any saved dashboard of an installed application can be embedded, including one imported
+  from a file in Atlas. A panel whose vault or slug does not exist on this PC stays as its own
+  error card, as under States. A non-BI dashboard shows
   its saved filter values; there are no filter controls, and a "Reset filters" button
   appears after an interaction changes a filter.
 

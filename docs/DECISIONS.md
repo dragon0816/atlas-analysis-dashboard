@@ -185,3 +185,34 @@ Later the same day, from building the embed pages and running their headless che
   runtime refuses (`n` is the key), so those fixture panels could not render. The generator
   now writes `n`, on the orchestrator's instruction. This changes the file's bytes, so AEP
   re-vendors it. The read contract itself is unchanged: AEP ignores transforms.
+
+## 2026-11-02 — Saved dashboards stop gaining analyses; dashboard files (amends 2026-11-01 reconcile)
+
+Owner decisions, relayed by the BI orchestrator:
+
+1. A saved dashboard no longer gains analyses by itself, in the app or at /embed/dashboard.
+   Reconcile still updates panels whose digest changed and still removes panels whose slug is
+   gone. The unsaved live board made by choosing a vault keeps showing every analysis in feed
+   order, and new ones appear. This amends the 2026-11-01 reconcile entry's "append missing
+   published slugs" and its rule that an empty saved board fills in; that record stays as history.
+2. A person can import a dashboard JSON file as a named dashboard, and export one. A file that AEP's
+   Knowledge page accepts is exactly the document `GET /dashboards/{name}` returns, unwrapped.
+
+Choices made to implement them:
+
+- "Saved" is DashboardPage's `savedName`, which already separates the two boards: choosing a vault
+  shows a document with no name, while opening or Save As sets one. `/embed/dashboard` is always
+  saved; a panel embed is live, narrowed to its one analysis. A preset or Restore default
+  on a named dashboard follows the same test. So a saved dashboard left empty now stays empty.
+- `reconcileBiDashboard` takes `append` (all, none, or chosen slugs), defaulting to all. Removal
+  was already a separate path. Parameter controls on a saved board cover only analyses it shows.
+- Adding by hand is one quiet "Add analysis" select in the BI controls, app only. It enters the
+  existing editor, so Save and Cancel decide. Rejected: a new panel-picker UI in the panel library.
+- No import or export existed. Validation on import is the existing client schema, with the server
+  as final authority, plus a 2 MB check before reading and a check that the application is installed.
+  Creating sends If-None-Match: *. A 412 asks for another name or the explicit Replace existing,
+  which reads the stored ETag and sends If-Match, so a change in between is refused. Rejected:
+  checking the names list first, which would leave a race; the server's answer is the check.
+- Export writes the board on screen, not the stored bytes: one more read would add a failure mode,
+  and for a dashboard saved and unchanged since they are the same document. The read contract
+  says to compare parsed JSON. Import and Export are off while editing, so neither can lose a draft.
