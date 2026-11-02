@@ -278,6 +278,7 @@ What the runs found, each fixed at its cause with no assertion relaxed:
 
 Same environment; again not quiet (CPU 55-100%, 37-43 python processes).
 
+- npm test on the final tree: 208 passed, 0 failed/cancelled/skipped, 318390 ms.
 - Goldens: both generators rerun, with no file changed against c7f9468.
 - Python: 53 tests OK (skipped=7), 33.677 s. check:aep-bi: 17 files match.
 - npm run build: TypeScript and Vite pass, 179 modules; existing chunk warnings only.
