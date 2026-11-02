@@ -23,8 +23,17 @@ export function biDashboard(catalog: BiCatalog): DashboardDocument {
 }
 export function levelCounts(rows: Row[]) { return { gap: rows.filter(row => row.level === 'gap').length, warning: rows.filter(row => row.level === 'warning').length }; }
 
-/** Reconcile producer-owned analysis metadata while retaining personal panel geometry. */
-export function reconcileBiDashboard(board: DashboardDocument, values: import('../types').VariableValues, catalog: BiCatalog): DashboardDocument {
+/** Published analyses with no panel on this board, in feed order. */
+export function missingAnalyses(board: DashboardDocument, catalog: BiCatalog) {
+  const shown = new Set(board.panels.filter(panel => panel.datasource.id === 'aep.bi.result' && panel.query?.vault === catalog.vault).map(panel => panel.query!.slug));
+  return catalog.order.filter(slug => !shown.has(slug)).map(slug => catalog.analyses.find(item => item.slug === slug)!);
+}
+/**
+ * Reconcile producer-owned analysis metadata while retaining personal panel geometry.
+ * `append` says which published analyses missing from the board are added: all of them for a
+ * live board, none for a saved one, or the ones a person chose by hand.
+ */
+export function reconcileBiDashboard(board: DashboardDocument, values: import('../types').VariableValues, catalog: BiCatalog, { append = true }: { append?: boolean | string[] } = {}): DashboardDocument {
   const generated = biDashboard(catalog), definitions = new Map(generated.panels.map(panel => [String(panel.query!.slug), panel]));
   const seen = new Set<string>();
   let variables = [...board.variables];
@@ -58,7 +67,7 @@ export function reconcileBiDashboard(board: DashboardDocument, values: import('.
   });
   for (const next of generated.panels) {
     const slug = String(next.query!.slug);
-    if (seen.has(slug)) continue;
+    if (seen.has(slug) || (append !== true && !(Array.isArray(append) && append.includes(slug)))) continue;
     installParameters(slug);
     const y = panels.reduce((bottom, panel) => Math.max(bottom, panel.layout.y + panel.layout.h), 0);
     panels.push({ ...next, layout: board.panels.length ? { ...next.layout, x: 0, y } : next.layout });

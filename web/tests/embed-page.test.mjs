@@ -173,6 +173,18 @@ test('ready waits for the result: an unanswered read stays loading', async () =>
   await page.close();
 });
 
+test('a saved subset stays a subset in an embed, while its panels follow the catalog', async () => {
+  const subset = JSON.parse(mixed); subset.panels = subset.panels.filter(panel => panel.id === 'bi-coverage');
+  const calls = serve({ '/dashboards/Subset': () => json(JSON.stringify(subset)) }), page = await open('/embed/dashboard/Subset');
+  await page.reach('ready');
+  assert.deepEqual([...page.element.querySelectorAll('[data-panel-id]')].map(panel => panel.dataset.panelId), ['bi-coverage']);
+  assert.equal(page.element.querySelector('[data-panel-id="bi-coverage"] h2').textContent, catalog.analyses.find(item => item.slug === 'node-coverage').title, 'a stale panel still updates');
+  assert.deepEqual([...page.element.querySelectorAll('[aria-label="AEP BI controls"] label')].length, 1, 'controls only for what is shown');
+  assert.ok(!calls.some(call => call.path.includes('/accounts-by-region/') || call.path.includes('/tech-updates/')), 'analyses not on the board are not read');
+  assertReadOnly(calls);
+  await page.close();
+});
+
 test('a dashboard with failing panels reports error and still shows its layout', async () => {
   serve();
   const page = await open('/embed/dashboard/Mixed%20BI%20layout');

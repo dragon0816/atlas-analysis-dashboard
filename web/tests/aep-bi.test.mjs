@@ -51,6 +51,29 @@ test('BI rejects oversized and malformed responses and honors caller cancellatio
   const wrong = new AepBiProvider({ fetch: async () => response({ ...result, slug: 'wrong' }) });
   assert.match((await wrong.result('v', 'counts', {}, new AbortController().signal)).message, /Wrong BI analysis/); wrong.dispose();
 });
+test('a saved board updates and removes analyses but gains none; a hand-picked one is added', async () => {
+  const { reconcileBiDashboard, biDashboard, missingAnalyses, parameterId } = await import('../src/platform/aep/biDashboard.ts');
+  const analysis = (slug, digest = `d-${slug}`, title = slug) => ({ slug, title, question: '', kind: 'sql', digest, chart: { type: 'table' }, params: { domain: { type: 'text', default: 'x' } }, requires: {} });
+  const catalog = (...analyses) => ({ vault: 'v', version: { tag: null, commit: 'c' }, order: analyses.map(item => item.slug), analyses });
+  const full = biDashboard(catalog(analysis('one'), analysis('two'), analysis('gone')));
+  const saved = { ...full, panels: full.panels.filter(panel => panel.query.slug !== 'one'), variables: full.variables.filter(variable => variable.id !== parameterId('one', 'domain')) };
+  const republished = catalog(analysis('one'), analysis('two', 'd-new', 'Two, renamed'), analysis('three'));
+  assert.deepEqual(missingAnalyses(saved, republished).map(item => item.slug), ['one', 'three']);
+  const next = reconcileBiDashboard(saved, saved.values, republished, { append: false });
+  assert.deepEqual(next.panels.map(panel => panel.query.slug), ['two'], 'gone is removed, one and three are not appended');
+  assert.equal(next.panels[0].title, 'Two, renamed');
+  assert.deepEqual(next.panels[0].layout, saved.panels[0].layout);
+  assert.ok(!next.variables.some(variable => variable.id === parameterId('three', 'domain')), 'no controls for an analysis not on the board');
+  const unchanged = { ...saved, panels: saved.panels.filter(panel => panel.query.slug === 'two') };
+  assert.equal(reconcileBiDashboard(unchanged, unchanged.values, catalog(analysis('two'), analysis('more')), { append: false }), unchanged, 'nothing changed, the same board');
+  const empty = { ...saved, panels: [], variables: [] };
+  assert.equal(reconcileBiDashboard(empty, empty.values, republished, { append: false }), empty, 'an empty saved board stays empty');
+  const picked = reconcileBiDashboard(next, next.values, republished, { append: ['three'] });
+  assert.deepEqual(picked.panels.map(panel => panel.query.slug), ['two', 'three']);
+  assert.ok(picked.panels[1].layout.y >= next.panels[0].layout.y + next.panels[0].layout.h, 'placed below');
+  assert.ok(picked.variables.some(variable => variable.id === parameterId('three', 'domain')));
+  assert.deepEqual(reconcileBiDashboard(next, next.values, republished).panels.map(panel => panel.query.slug), ['two', 'one', 'three'], 'a live board still gains everything');
+});
 test('waiting retries stop after three attempts; disposal cancels pending polling', async () => {
   let calls = 0; const values = [];
   const provider = new AepBiProvider({ retryMs: 5, fetch: async () => { calls++; return response({ ok: false, code: 'result_not_ready', message: 'Waiting' }, 409); } });

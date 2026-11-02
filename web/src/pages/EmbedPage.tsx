@@ -96,7 +96,7 @@ function EmbedBoard({ application, initial, panel, fatal, prepare }: { applicati
   const pending = biProvider && (!feed || board.panels.some(p => p.datasource.id === 'aep.bi.result' && !warnings[p.id]));
   const state: EmbedState = blocking?.state ?? (feedState !== 'ready' ? feedState : panelsState !== 'ready' ? panelsState : pending ? 'loading' : 'ready');
   return <EmbedShell state={state} panel={!!panel}>
-    {biProvider && <BiControls provider={biProvider} board={board} values={values} disabled={false} onBoard={() => {}} onReconcile={next => { setBoard(next); setValues(next.values ?? {}); }} onValue={(id, value) => setValues(previous => ({ ...previous, [id]: value }))} embed={{ slug: panel?.slug, prepare, onStatus: setFeed }} />}
+    {biProvider && <BiControls provider={biProvider} board={board} values={values} disabled={false} onBoard={() => {}} onReconcile={next => { setBoard(next); setValues(next.values ?? {}); }} onValue={(id, value) => setValues(previous => ({ ...previous, [id]: value }))} saved={!panel} embed={{ slug: panel?.slug, prepare, onStatus: setFeed }} />}
     {filtered && <div className="atlas-status"><button className="atlas-button subtle" onClick={resetFilters}>Reset filters</button></div>}
     {blocking ? <Message alert>{blocking.message}</Message>
       : !board.panels.length ? <Message alert={state === 'offline' || state === 'error'}>{state === 'loading' ? 'Loading…' : state === 'offline' ? 'AEP is offline. Retrying…' : state === 'error' ? feed?.message ?? 'Could not read AEP.' : 'This dashboard has no panels.'}</Message>

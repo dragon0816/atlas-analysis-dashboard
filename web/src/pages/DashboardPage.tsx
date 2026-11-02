@@ -4,6 +4,7 @@ import { AepProvider } from '../platform/aep/provider';
 import { AepControls } from '../components/aep/AepControls';
 import { AepBiProvider } from '../platform/aep/bi';
 import { BiControls } from '../components/aep/BiControls';
+import { reconcileBiDashboard } from '../platform/aep/biDashboard';
 import { PlatformRuntime } from "../platform/runtime";
 import { retain } from "../platform/retain";
 import { PANEL_LIBRARY } from "../platform/catalog";
@@ -104,6 +105,13 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
       setNewOrigin(null); setCheckpoint(null); setCheckpointValues({}); setBoard(doc); setSavedName(name.trim()); setRevision(etag); setEditing(false); setSelected(null); setSaveAs(false); setSettings(false); setStatus(`Saved “${name.trim()}”. Preview mode.`); refreshNames();
     } catch (ex) { setStatus(`Save failed: ${String(ex)}`); } finally { mutationInFlight.current = false; setBusy(false); }
   };
+  const addAnalysis = (slug: string, catalog: Parameters<typeof reconcileBiDashboard>[2]) => {
+    if (!board) return;
+    // A hand-made change like any other: the editor's Save and Cancel decide whether it stays.
+    if (!editing) beginEditing();
+    const next = reconcileBiDashboard(board, values, catalog, { append: [slug] });
+    setBoard(next); setValues(next.values ?? {}); setSelected(next.panels.find(panel => panel.query?.slug === slug)?.id ?? null);
+  };
   const askSaveAs = () => { setStatus(""); setSaveName(savedName ? `${savedName} copy` : board?.title ?? "Dashboard"); setSaveAs(true); };
   const create = () => {
     if (!application || !board || !mayDiscard()) return;
@@ -187,7 +195,7 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
       <button className="atlas-button subtle atlas-reset-filters" disabled={busy} onClick={() => { setValues(defaults(board)); setHighlight([]); }}>Reset filters</button>
     </div>
     {aepProvider && <AepControls key={appId} provider={aepProvider} setTimeRange={range => setValues(prev => ({ ...prev, time_range: range, run_id: "" }))} refresh={() => { runtime?.invalidate(); setRefreshKey(v => v + 1); }} />}
-    {biProvider && <BiControls provider={biProvider} board={board} values={values} disabled={editing || busy} onBoard={next => { if (mayDiscard()) showDocument(next); }} onReconcile={next => { setBoard(next); setValues(next.values ?? {}); }} onValue={(id, value) => setValues(previous => ({ ...previous, [id]: value }))} />}
+    {biProvider && <BiControls provider={biProvider} board={board} values={values} disabled={editing || busy} onBoard={next => { if (mayDiscard()) showDocument(next); }} onReconcile={next => { setBoard(next); setValues(next.values ?? {}); }} onValue={(id, value) => setValues(previous => ({ ...previous, [id]: value }))} saved={!!savedName} onAddAnalysis={busy ? undefined : addAnalysis} />}
     <div id="atlas-dashboard-controls" className="atlas-source-bar" hidden={!controls.dashboards} role="region" aria-label="Dashboard selection"><Field label="Application"><select className="atlas-control" disabled={busy} value={appId} onChange={e => chooseApp(e.target.value)}>{applications.map(app => <option key={app.id} value={app.id}>{app.name}</option>)}</select></Field><Field label="Default preset"><select className="atlas-control" disabled={busy} value={application.dashboards.some(d => d.id === board.id) ? board.id : ""} onChange={e => choosePreset(e.target.value)}><option value="" disabled>User dashboard</option>{application.dashboards.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}</select></Field><Field label="Saved dashboard"><select className="atlas-control" disabled={busy} value={savedName} onChange={e => void openSaved(e.target.value)}><option value="">Open a saved view…</option>{names.map(name => <option key={name}>{name}</option>)}</select></Field><button className="atlas-button" disabled={busy} onClick={restoreDefault}>Restore default</button></div>
     <div id="atlas-filter-controls" className="atlas-variables" hidden={!controls.filters} inert={busy} role="region" aria-label="Dashboard filters">{board.variables.map(variable => <VariableControl key={variable.id} variable={variable} value={values[variable.id] ?? ""} onChange={value => setValues(prev => ({ ...prev, [variable.id]: value }))} />)}</div>
     {status && <div className="atlas-status" role="status"><span>{status}</span><button aria-label="Dismiss status" onClick={() => setStatus("")}>×</button></div>}{applicationPackages.errors.length > 0 && <div className="atlas-status">Some application packages could not load: {applicationPackages.errors.join("; ")}</div>}
