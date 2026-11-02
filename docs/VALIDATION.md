@@ -297,3 +297,12 @@ Not exercised in a browser: a saved board meeting a real republish. The fixture 
 second version, so "across a poll" there sees an unchanged version and does not reconcile again.
 The first catalog load does reconcile through the same call with append off, which is what the
 browser cases prove; the republish itself is covered by unit tests of reconcile and BiControls.
+
+Later the same day, a saved board meeting a real republish, which the paragraph above left open:
+npm run test:aep-embed:i1 is now exit 0, 22/22. After the fixture cases, an Atlas-only stub on the
+feed's port serves a second version that changes one digest, removes one slug and adds one
+analysis. In /embed/dashboard and in the app, the changed panel updates in place, the removed one
+goes, the added one is neither shown nor read, the stored document is untouched, and only the app's
+picker offers it. As a control, the same version on an unsaved board does show it, in feed order.
+Only the targeted tests (aep-bi, embed-page, dashboard-file) and this run were repeated; the
+script is the only code changed, so the full suites were not.

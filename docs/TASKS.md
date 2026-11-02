@@ -77,4 +77,4 @@ Overall status: implemented but NOT done under the project's definition of done;
 - [x] Import a dashboard file: schema and size checks, clear refusals, no silent overwrite, explicit replace.
 - [x] Export a dashboard file: the GET document, unwrapped; stated in AEP_DASHBOARD_READ_CONTRACT.md.
 - [x] Unit tests and embed I1 for both; contract docs updated; goldens unchanged since c7f9468.
-- [ ] Browser check that a saved board gains nothing on a real republish (see VALIDATION.md).
+- [x] Browser check that a saved board gains nothing on a real republish: embed I1 22/22, with a live-board control.

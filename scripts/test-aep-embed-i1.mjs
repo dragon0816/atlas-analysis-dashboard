@@ -88,7 +88,10 @@ store.close()
   const broken = { ...mixed, values: { 'bi:vault': 'no-such-vault' }, panels: [coverage, { ...coverage, id: 'bad-transform', transform: [{ op: 'limit', n: -1 }], layout: { ...coverage.layout, x: 0, y: 8 } }, { ...coverage, id: 'gone-vault', query: { ...coverage.query, vault: 'no-such-vault' }, layout: { ...coverage.layout, x: 6, y: 8 } }] };
   // A saved subset: one current analysis, plus one the feed no longer publishes.
   const subset = { ...mixed, panels: [{ ...coverage, layout: { x: 0, y: 0, w: 6, h: 8 } }, { ...coverage, id: 'bi-unpublished', title: 'Unpublished', query: { ...coverage.query, slug: 'no-longer-published' }, layout: { x: 6, y: 0, w: 6, h: 8 } }] };
-  await writeFile(join(temporary, 'dashboard.json'), JSON.stringify({ 'Embed fixture': { ...mixed, panels: working }, 'Broken panels': broken, Subset: subset }));
+  // A saved board current with version 1, for the republish case: tech-updates is left off it on purpose.
+  const savedPanel = (id, slug, x) => ({ ...coverage, id, title: catalog.analyses.find(item => item.slug === slug).title, query: { vault: catalog.vault, slug, params: { domain: 'robotics' }, digest: catalog.analyses.find(item => item.slug === slug).digest }, transform: [], layout: { x, y: 0, w: 6, h: 8 } });
+  const republish = { ...mixed, panels: [savedPanel('saved-coverage', 'node-coverage', 0), savedPanel('saved-region', 'accounts-by-region', 6)] };
+  await writeFile(join(temporary, 'dashboard.json'), JSON.stringify({ 'Embed fixture': { ...mixed, panels: working }, 'Broken panels': broken, Subset: subset, Republish: republish }));
   const seeded = start(python, ['-B', '-c', seed, data, join(temporary, 'dashboard.json')], root);
   await once(seeded, 'exit'); assert.equal(seeded.exitCode, 0, seeded.output);
   const allowed = [`http://127.0.0.1:${ALLOWED_PORT}`, `http://localhost:${ALLOWED_PORT}`];
@@ -420,6 +423,76 @@ store.close()
   await reach('offline');
   assert.match(await inFrame(`document.querySelector('[role="alert"]').textContent`), /AEP is offline/);
   pass('AEP offline from the start', 'clear offline message');
+
+  // A real republish, from an Atlas-only stub on the feed's port; AEP and its goldens are untouched.
+  // Version 2 changes node-coverage's digest, removes accounts-by-region and adds brand-new.
+  let revision = 1;
+  const health = await feed('health.json'), vaultList = await feed('vaults.json');
+  const defaultResults = Object.fromEntries(await Promise.all(catalog.order.map(async slug => [slug, await feed(`result-${slug}.json`)])));
+  const secondVersion = { tag: 'stub-v2', commit: 'stub-commit-2' };
+  const listing = () => {
+    if (revision === 1) return catalog;
+    const next = structuredClone(catalog);
+    next.version = secondVersion;
+    next.analyses = next.analyses.filter(item => item.slug !== 'accounts-by-region').map(item => item.slug === 'node-coverage' ? { ...item, digest: 'stub-digest-2', title: 'Republished coverage' } : item);
+    next.analyses.push({ ...next.analyses.find(item => item.slug === 'node-coverage'), slug: 'brand-new', title: 'Brand new analysis', digest: 'stub-digest-new' });
+    next.order = ['brand-new', ...next.order.filter(slug => slug !== 'accounts-by-region')];
+    return next;
+  };
+  const stub = createServer((request, response) => {
+    const url = new URL(request.url, 'http://stub.invalid'), slug = decodeURIComponent(url.pathname.split('/').at(-2));
+    const version = listing().version;
+    let data;
+    if (url.pathname.endsWith('/health')) data = health;
+    else if (url.pathname.endsWith('/vaults')) { data = structuredClone(vaultList); data.vaults[0].reads = version; }
+    else if (url.pathname.endsWith('/analyses')) data = listing();
+    else {
+      const analysis = listing().analyses.find(item => item.slug === slug);
+      if (!analysis) { response.writeHead(404, { 'content-type': 'application/json', 'access-control-allow-origin': ATLAS }); response.end(JSON.stringify({ ok: false, code: 'analysis_unknown', message: `no analysis ${slug}` })); return; }
+      data = { ...structuredClone(defaultResults[slug === 'brand-new' ? 'node-coverage' : slug]), slug, digest: analysis.digest, version };
+    }
+    response.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': ATLAS }); response.end(JSON.stringify(data));
+  });
+  await new Promise((done, fail) => { stub.once('error', fail); stub.listen(FEED_PORT, '127.0.0.1', done); });
+  hosts.push(stub);
+  const storedRepublish = JSON.stringify(await stored('Republish'));
+  const newlyRead = () => responses.filter(item => item.url.includes('/brand-new/'));
+  // The same steps for a saved board, wherever it is shown.
+  const meetsRepublish = async (evaluate, place) => {
+    await until(async () => JSON.stringify(await panelIds(evaluate)) === JSON.stringify(['saved-coverage', 'saved-region']), `${place}: version 1 layout`);
+    await until(async () => (await evaluate(`document.querySelector('[data-panel-id="saved-region"] tbody tr') !== null || document.querySelector('[data-panel-id="saved-region"] [role="button"]') !== null`)), `${place}: version 1 rows`);
+    const geometry = await evaluate(`document.querySelector('[data-panel-id="saved-coverage"]').getAttribute('style')`);
+    revision = 2;
+    await until(async () => (await evaluate(`document.querySelector('[data-panel-id="saved-coverage"] h2')?.textContent`)) === 'Republished coverage', `${place}: changed digest updates`, 40000);
+    assert.deepEqual(await panelIds(evaluate), ['saved-coverage'], `${place}: removed goes, added and missing do not appear`);
+    assert.equal(await evaluate(`document.querySelector('[data-panel-id="saved-coverage"]').getAttribute('style')`), geometry, `${place}: the changed panel keeps its place`);
+    assert.equal(await evaluate(`[...document.querySelectorAll('[aria-label="AEP BI controls"] label')].some(l=>l.textContent.startsWith('Brand new analysis'))`), false, `${place}: the added analysis has no controls`);
+    assert.deepEqual(newlyRead(), [], `${place}: the added analysis is not even read`);
+    assert.equal(JSON.stringify(await stored('Republish')), storedRepublish, `${place}: reconciling writes nothing`);
+  };
+  await open(sameSite, '/embed/dashboard/Republish');
+  await reach('ready');
+  await meetsRepublish(inFrame, 'embed');
+  await shot('09-republished-embed');
+  pass('republish, saved dashboard embed', 'version 2: changed panel updated in place, removed one gone, added one neither shown nor read; stored document untouched');
+
+  revision = 1;
+  await openApp();
+  responses.length = 0;
+  await choose(controlSelect(2), 'Republish');
+  await meetsRepublish(top, 'app');
+  await until(async () => JSON.stringify(await top(`[...${addPicker}.options].slice(1).map(o=>o.value)`)) === JSON.stringify(['brand-new', 'tech-updates']), 'the added analysis is offered by hand');
+  await shot('10-republished-app');
+  pass('republish, saved dashboard in the app', 'the same, and the picker offers the added analysis by hand');
+
+  // The control: the same version on a live board does show it, so its absence above means something.
+  await openApp();
+  await choose(controlSelect(0), 'aep_bi');
+  await until(() => top(`!!document.querySelector('[aria-label="AEP BI controls"] option[value="${catalog.vault}"]')`), 'vault listed for the control');
+  await choose(`document.querySelector('[aria-label="AEP BI controls"] select')`, catalog.vault);
+  await until(async () => JSON.stringify(await panelIds(top)) === JSON.stringify(listing().order.map(slug => `bi-${slug}`)), 'live board shows version 2');
+  await until(() => newlyRead().length > 0, 'the added analysis is read on a live board');
+  pass('republish, live board', 'the same version on an unsaved board shows the added analysis, in feed order');
 
   assert.deepEqual(writes, [], 'an embed page must not write');
   assert.deepEqual(exceptions, []);
