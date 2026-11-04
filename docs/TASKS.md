@@ -109,5 +109,7 @@ legacy worker JSON 可能 null，消費端須使用 host acquisition JSON。
 - [x] portable exporter action 放回現有 toolbar。
 - [x] 最後 tree 前端 225 項通過、TypeScript／Vite build 通過。
 - [x] 實際 exporter／Atlas consumer 合成互通：line／stat／table、transform closure、runtime／stored report 值、live 更新及清理、digest／capability／權限拒絕。
-- [ ] 真實 AEP Session、static／streaming processing 的完整語意移植、第二 host 瀏覽器 import／bind／視覺驗收、CI。
+- [ ] 真實 AEP Session、static／streaming processing 的完整語意移植、真實對話產物到第二 host 的完整 E2E（synthetic UI 已驗）、CI。
 - [ ] 僅 draft PR；兩條 E2E 與 CI 全過前不 merge；approval 需 Leo 針對當次 PR 明確確認。
+
+- [x] 後續已驗乾淨第二host的static／live Dashboard UI：三panel、binding反例、數值／unit／mean、Save／reopen、live12筆與新report一致、1條active共用SSE；屬synthetic integration，真AEP gate仍未通過。
