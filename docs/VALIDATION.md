@@ -306,3 +306,24 @@ goes, the added one is neither shown nor read, the stored document is untouched,
 picker offers it. As a control, the same version on an unsaved board does show it, in feed order.
 Only the targeted tests (aep-bi, embed-page, dashboard-file) and this run were repeated; the
 script is the only code changed, so the full suites were not.
+
+## 2026-11-04：Atlas simulation P1
+
+隔離基線 033d67b2；web tests 213 通過、build 通過。server tests 53 通過（7 個平台 skip），
+使用已安裝 Python 3.14.4，未修改安全檢查。5 個新測試驗 scalar tuples、checked denominator、
+replay/gaps/conflicts、AbortSignal/shared connection、preset pipelines。
+跨 repo scripts/check-atlas-simulation.mjs 讀真 HTTP 12 samples；power/sequence/time/unit 與 JSON report
+相同，mean/sigma/Cpk 與 Python statistics 誤差 <1e-12。error fixture 在 3/8 中止、error=1；
+Stop fixture 為 1/100，JSON null，coverage incomplete。瀏覽器驗21/21 GUI-generated sweep與line/stat/table。
+未驗真機、連續trace、browser人工切網路、長跑/5000點、production proxy及離線。沒有推送或部署。
+
+
+## 第二階段 durable scalar（2026-11-04）
+
+web 221 pass / 0 fail，TypeScript + Vite build pass（既有 chunk-size warning）。Durable tests8 項，
+涵蓋 restore、反序、replay、stale/reconnect、conflict、舊 run、dispose、transient failure retry 與 retry 上限。
+實際 fixture HTTP completed12、error3/8、Stop1/100 保存資料逐列一致；腳本輸出
+`atlas-phase2/build/simulation-evidence/phase2-dashboard-comparison.json`。
+GUI Run/Stop3/100 與重新載入同一 UUID；先前 fixture resume 後2/100 恢復。截圖 task/evidence-phase2。
+Atlas host 8+3 unit、queue16、HTTP3 與 web43 pass；dashboard backend 沒改，P1 server53/skip7未重跑。
+未測實體掉電、production hosting、長跑/多 runner 或原始波形。詳 ATLAS_SIMULATION.md。

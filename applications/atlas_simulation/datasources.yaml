@@ -1,0 +1,18 @@
+simulation.samples:
+  type: custom
+  provider: atlas_simulation
+  label: Atlas completed synthetic power samples
+  format: table
+  url: /atlas-api/instances/events
+  query:
+    runner: 1
+  maxRows: 5000
+simulation.statistics:
+  type: custom
+  provider: atlas_simulation
+  label: Checked synthetic power error statistics
+  format: table
+  url: /atlas-api/instances/events
+  query:
+    runner: 1
+    view: statistics

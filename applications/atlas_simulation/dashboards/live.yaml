@@ -1,0 +1,48 @@
+schemaVersion: 2
+id: atlas-simulation-live
+title: Simulated Power — Atlas Live
+applicationId: atlas_simulation
+description: Completed scalar samples over Atlas mux SSE; synthetic timestamps, bounded to 5000 results. No RF or continuous waveform transport.
+variables: []
+panels:
+  - id: power
+    title: Acquired power (dBm) — synthetic clock
+    type: line
+    datasource: {id: simulation.samples}
+    transform: [{op: filter, field: verdict, operator: ne, value: error}]
+    mapping: {x: sequence, y: power_dbm}
+    display: {}
+    layout: {x: 0, y: 0, w: 8, h: 7}
+  - id: pass-rate
+    title: Checked error measurement pass fraction (0..1)
+    type: stat
+    datasource: {id: simulation.statistics}
+    transform: []
+    mapping: {value: pass_rate}
+    display: {}
+    layout: {x: 8, y: 0, w: 4, h: 3}
+  - id: statistics
+    title: Current execution statistics — error/unchecked excluded from pass denominator
+    type: table
+    datasource: {id: simulation.statistics}
+    transform: []
+    mapping: {}
+    display: {}
+    layout: {x: 0, y: 7, w: 12, h: 5}
+  - id: samples
+    title: Sample integrity, source time and verdict
+    type: table
+    datasource: {id: simulation.samples}
+    transform: []
+    mapping: {}
+    display: {}
+    layout: {x: 0, y: 12, w: 12, h: 7}
+  - id: notes
+    title: PoC boundaries
+    type: text
+    datasource: {id: simulation.samples}
+    transform: []
+    mapping: {}
+    display:
+      text: 'Synthetic source. One completed scalar sample per testcase. Saved samples restore by run ID; Stop keeps a partial execution. On disconnect the display is STALE. A pass fraction of 1 does not mean the plan finished. Error limits are in dB; Cpk needs matching limits and nonzero sample sigma. Use Atlas to Run or Stop. Raw waveforms and standalone production hosting are pending.'
+    layout: {x: 8, y: 3, w: 4, h: 4}

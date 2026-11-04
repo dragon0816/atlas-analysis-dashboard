@@ -1,0 +1,7 @@
+id: atlas_simulation
+name: Atlas Simulated Instrument
+description: Hardware-free scalar streaming from isolated Atlas runner 1. Requires the local simulation fixture and Vite proxy.
+demo: false
+datasources: datasources.yaml
+dashboards:
+  - dashboards/live.yaml

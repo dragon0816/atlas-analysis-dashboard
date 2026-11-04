@@ -78,3 +78,26 @@ Overall status: implemented but NOT done under the project's definition of done;
 - [x] Export a dashboard file: the GET document, unwrapped; stated in AEP_DASHBOARD_READ_CONTRACT.md.
 - [x] Unit tests and embed I1 for both; contract docs updated; goldens unchanged since c7f9468.
 - [x] Browser check that a saved board gains nothing on a real republish: embed I1 22/22, with a live-board control.
+
+## Atlas 模擬儀器 P1（2026-11-04）
+
+- [x] 專用 mux scalar provider、sequence/time/unit/checked verdict、共享連線、100ms bounded snapshots。
+- [x] 模擬 application / line-stat-table、pass denominator、sample sigma / Cpk、partial/stale coverage。
+- [x] 5 項 adapter/preset 測試；全套 web 213、build；既有 server 53（7 skip）通過。
+- [x] 真 Atlas HTTP 輸出餵 production adapter：12 samples/report parity、replay、error abort、Stop；與 Python 統計相同。
+- [x] 瀏覽器 Atlas GUI→21/21 sweep→Dashboard live line/stat/table。
+- [ ] 原始波形、durable identity、production hosting adapter、多 runner、長跑與離線驗收。
+- [ ] Stop 後可靠保存需要 Atlas host journal；現有 worker 強制停止會留下 null JSON，已明確記錄。
+
+操作、契約、具體限制與重跑指令見 [ATLAS_SIMULATION](ATLAS_SIMULATION.md)。
+
+
+## Atlas 第二階段（2026-11-04）
+
+- [x] durable UUID/event_sequence、只讀 restore/replay、亂序前綴、衝突/舊 run 拒絕、斷線 STALE。
+- [x] bounded 自動 recovery/retry/cleanup；web 221/build；8 項 durable tests。
+- [x] 真 host archive 對照、GUI Stop/Reload 三筆 UUID 一致、fixture resume 磁碟恢復。
+- [ ] 原始 waveform adapter、production proxy、多 runner、長跑/掉電與真機仍待驗。
+
+P1 上述兩項 durable identity/Stop 保存待辦已由本階段的 opt-in host journal 與 provider 完成；
+legacy worker JSON 可能 null，消費端須使用 host acquisition JSON。

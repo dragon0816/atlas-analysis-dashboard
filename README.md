@@ -17,6 +17,10 @@
 
 ## 快速開始
 
+2026-11-04：新增 **Atlas Simulated Instrument** 開發用 scalar streaming application。
+它透過專用 adapter 接收隔離 Atlas runner 1 的已完成合成量測，顯示即時功率、來源序號/時間及統計；
+不使用 AEP telemetry、不包含原始波形。啟動、契約與 Stop 保存限制見 [模擬儀器整合](docs/ATLAS_SIMULATION.md)。
+
 第一次移到本機，請依 [本機執行、開發與驗收](docs/LOCAL_DEVELOPMENT.md) 操作；內含 Windows PowerShell、macOS／Linux、儲存位置及排錯。要接 AEP Harness，接著讀 [Telemetry 整合與本機交接](docs/AEP_TELEMETRY_INTEGRATION.md)。**AEP telemetry 整合程式已加入，目前完整 build／瀏覽器驗收仍受環境阻擋；詳見 docs/HANDOFF.md。**
 
 需求：Node.js 24（package 要求 >=24）；Linux/macOS 使用 Python 3.11 以上，Windows 使用 Python 3.13 以上。Windows 分支為實驗支援；Ubuntu／Windows CI 已有通過紀錄，但不代表 Windows 實機瀏覽器／GPU 或 macOS 已驗收。

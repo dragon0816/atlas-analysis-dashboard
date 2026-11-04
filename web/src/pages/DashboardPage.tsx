@@ -6,8 +6,10 @@ import { AepBiProvider } from '../platform/aep/bi';
 import { BiControls } from '../components/aep/BiControls';
 import { reconcileBiDashboard } from '../platform/aep/biDashboard';
 import { ImportDashboardDialog } from '../components/dashboard/ImportDashboardDialog';
+import { ExportBundleDialog } from '../components/dashboard/ExportBundleDialog';
 import { MAX_DASHBOARD_FILE_BYTES, downloadDashboard, importNameFor, parseDashboardFile } from '../platform/dashboardFile';
 import { PlatformRuntime } from "../platform/runtime";
+import { DurableAtlasSimulationProvider } from "../platform/atlas/acquisitions";
 import { retain } from "../platform/retain";
 import { PANEL_LIBRARY } from "../platform/catalog";
 import { nextPanelLayout, settlePanels } from "../platform/layout";
@@ -15,7 +17,7 @@ import { actionValues, applyFilterAction, safeLink } from "../platform/actions";
 import { loadDashboard, persistDashboard, savedDashboardNames } from "../platform/persistence";
 import { DashboardCanvas } from "../components/dashboard/DashboardCanvas";
 import { Field, JsonEditor, PanelProperties } from "../components/dashboard/PanelProperties";
-import type { DashboardDocument, Dataset, PanelDefinition, PanelEvent, PlatformPanelKind, Row, VariableDefinition, VariableValues } from "../platform/types";
+import type { ApplicationDefinition, DashboardDocument, Dataset, PanelDefinition, PanelEvent, PlatformPanelKind, Row, VariableDefinition, VariableValues } from "../platform/types";
 import "../platform/dashboard.css";
 
 const clone = <T,>(value: T): T => structuredClone(value);
@@ -66,12 +68,14 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
   const [saveAs, setSaveAs] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [importing, setImporting] = useState<{ document: DashboardDocument; name: string } | null>(null);
+  const [portableExport,setPortableExport]=useState<{document:DashboardDocument;application:ApplicationDefinition}|null>(null);
   const importInput = useRef<HTMLInputElement>(null);
   const [settings, setSettings] = useState(false);
   const [highlight, setHighlight] = useState<string[]>([]);
   const aepProvider = useMemo(() => application?.id === 'aep_harness' ? new AepProvider() : null, [application]);
   const biProvider = useMemo(() => application?.id === 'aep_bi' ? new AepBiProvider() : null, [application]);
-  const runtime = useMemo(() => application ? new PlatformRuntime(application, { providers: aepProvider ? { aep: aepProvider } : biProvider ? { aep_bi: biProvider } : {}, variableDefinitions: () => boardRef.current?.variables ?? [] }) : null, [application]);
+  const simulationProvider = useMemo(() => application?.id === 'atlas_simulation' ? new DurableAtlasSimulationProvider() : null, [application]);
+  const runtime = useMemo(() => application ? new PlatformRuntime(application, { providers: aepProvider ? { aep: aepProvider } : biProvider ? { aep_bi: biProvider } : simulationProvider ? {atlas_simulation: simulationProvider} : {}, variableDefinitions: () => boardRef.current?.variables ?? [] }) : null, [application]);
   useEffect(() => retain(runtime), [runtime]);
   const dirty = editing && (!!newOrigin || (!!checkpoint && (JSON.stringify(board) !== JSON.stringify(checkpoint) || JSON.stringify(values) !== JSON.stringify(checkpointValues))));
   useEffect(() => { onDirtyChange?.(dirty); return () => onDirtyChange?.(false); }, [dirty, onDirtyChange]);
@@ -218,6 +222,8 @@ export function DashboardPage({ onDirtyChange, onBusyChange }: { onDirtyChange?:
     </div>
     {saveAs && <div className="atlas-modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget && !busy) setSaveAs(false); }}><section className="atlas-modal" role="dialog" aria-modal="true" aria-label="Save dashboard as"><h2>{newOrigin ? "Save new dashboard" : "Save As"}</h2><p>Name this dashboard, then save to return to Preview mode. Existing names are protected from overwrite.</p>{status.startsWith("Save failed:") && <p role="alert" className="text-rose-300">{status}</p>}<form onSubmit={e => { e.preventDefault(); void save(saveName, true); }}><Field label="Dashboard name"><input className="atlas-control" autoFocus value={saveName} onChange={e => setSaveName(e.target.value)} onKeyDown={e => { if (e.key === "Escape" && !busy) setSaveAs(false); }} maxLength={120} required /></Field><div className="mt-5 flex justify-end gap-2"><button type="button" className="atlas-button" disabled={busy} onClick={() => setSaveAs(false)}>Cancel</button><button className="atlas-button primary" disabled={busy || !saveName.trim()}>Save and preview</button></div></form></section></div>}
     {importing && <ImportDashboardDialog document={importing.document} initialName={importing.name} onCancel={() => setImporting(null)} onImported={name => { setImporting(null); refreshNames(); void openSaved(name); }} />}
+    {!editing && <button type="button" className="atlas-button fixed bottom-3 right-3 z-10" disabled={busy} onClick={()=>setPortableExport({document:clone({...board,values}),application:clone(application)})}>Export for Atlas…</button>}
+    {portableExport&&<ExportBundleDialog {...portableExport} onClose={()=>setPortableExport(null)}/>}
     {details && <DetailsDialog details={details} datasets={datasets} onClose={() => setDetails(null)} />}
   </div>;
 }

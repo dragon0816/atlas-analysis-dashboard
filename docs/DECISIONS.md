@@ -216,3 +216,18 @@ Choices made to implement them:
 - Export writes the board on screen, not the stored bytes: one more read would add a failure mode,
   and for a dashboard saved and unchanged since they are the same document. The read contract
   says to compare parsed JSON. Import and Export are off while editing, so neither can lose a draft.
+
+## 2026-11-04：模擬儀器使用獨立 scalar adapter
+
+以 application package + trusted custom provider 接 Atlas 的既有 completed-result mux SSE，
+共用原有 panels / SourceRegistry。使用固定 loopback dev proxy，不改 server security 或引入任意 proxy。
+沒有使用 AEP telemetry，沒有把 trace-summary 當原始波形。原始波形、durable identity、可靠停止後保存另行設計。
+本次依使用者新指令在隔離 clone 修改雙 repo，不改既有 dirty knowledge 工作樹，也無 push/merge/release。
+
+
+## 2026-11-04：durable recovery 使用 Atlas host journal
+
+依新優先序，Atlas opt-in journal 在發布前 fsync，Dashboard 透過唯讀頁面 restore 與 SSE 合併。
+run_id/event_sequence 統一資料身分，舊回應不覆蓋新 execution；缺序等待，不補造點。
+一次共享來源、每秒最多一次恢復、三次 retry budget，失敗明示 incomplete；Stop 的 checked pass_fraction 不能當完成。
+原始 waveform、production hosting 與一天第二產品驗收仍待後續，詳 ATLAS_SIMULATION.md。

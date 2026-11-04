@@ -134,3 +134,20 @@ sorts eligible panels by stored y/x/id, keeps each vault/slug's first occurrence
 and lists ignored duplicates in its preview. Atlas retains all personal geometry,
 transforms and Duplicate behavior. See AEP_DASHBOARD_READ_CONTRACT.md and the
 Atlas-owned producer goldens in web/tests/fixtures/atlas_dashboard_golden/.
+
+## Atlas 模擬儀器 adapter（2026-11-04）
+
+AtlasSimulationProvider 只讀固定 /atlas-api/instances/events 的 runner 1 mux，辨識
+atlas.simulation.power.v1 的 completed scalar tuples。SourceRegistry 共用 application provider，
+100ms bounded snapshots，index 去重與重連 replay rebuild，斷線 STALE、缺序與不完整 execution 明示。
+這是獨立 dashboard adapter；Atlas extension 仍透過 host stream，不另開 EventSource。
+Vite 開發 proxy 固定指向 loopback 18765；production Python server / AEP / vendored renderer 均未修改。
+詳見 [ATLAS_SIMULATION](ATLAS_SIMULATION.md)。
+
+
+## Durable scalar acquisition（第二階段，2026-11-04）
+
+DashboardPage 使用 DurableAtlasSimulationProvider：fixed read-only acquisition restore + shared mux SSE，
+run_id/event_sequence 合併連續有效前綴，bounded gaps recovery/retries，保留 STALE/partial。
+VITE_ATLAS_PORT 只調數字 port（預設18765），host 仍127.0.0.1；production Python server 未新增 proxy。
+保留舊 scalar state 和 adapter 作相容測試；完整原始波形需 producer additive transport，現有 summary 不適用。

@@ -59,7 +59,7 @@ const labelInput=(label,scope=document)=>[...scope.querySelectorAll('label')].fi
 
 test('application packages are data-only, valid, isolated and all mock panels run', async () => {
   assert.deepEqual(packages.errors, []);
-  assert.deepEqual(packages.applications.map(app => app.id).sort(), ['aep_bi', 'aep_harness', 'agent_validation', 'rs_knowledge']);
+  assert.deepEqual(packages.applications.map(app => app.id).sort(), ['aep_bi', 'aep_harness', 'agent_validation', 'atlas_simulation', 'rs_knowledge']);
   for (const app of packages.applications.filter(app => app.demo)) {
     const runtime = new core.PlatformRuntime(app);
     for (const dashboard of app.dashboards) {
@@ -82,7 +82,7 @@ test('application packages are data-only, valid, isolated and all mock panels ru
   const matrix = await runtime.query(dashboard.panels.find(p => p.id === 'matrix'), { market: 'AI', product: 'Tester' });
   assert.equal(matrix.rows.length, 1); assert.equal(matrix.rows[0].market, 'AI'); assert.equal(matrix.rows[0].product, 'Tester');
   const again = core.readApplicationPackages({ ...files, '/escape/application.yaml': 'id: bad\nname: Bad\ndatasources: ../secrets.yaml\ndashboards: [x.yaml]' });
-  assert.equal(again.applications.length, 4); assert.match(again.errors.join(' '), /within its package/);
+  assert.equal(again.applications.length, 5); assert.match(again.errors.join(' '), /within its package/);
   runtime.dispose();
 });
 
