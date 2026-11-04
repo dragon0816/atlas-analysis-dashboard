@@ -327,3 +327,12 @@ web 221 pass / 0 fail，TypeScript + Vite build pass（既有 chunk-size warning
 GUI Run/Stop3/100 與重新載入同一 UUID；先前 fixture resume 後2/100 恢復。截圖 task/evidence-phase2。
 Atlas host 8+3 unit、queue16、HTTP3 與 web43 pass；dashboard backend 沒改，P1 server53/skip7未重跑。
 未測實體掉電、production hosting、長跑/多 runner 或原始波形。詳 ATLAS_SIMULATION.md。
+
+
+## 2026-11-04 雲端第三階段
+
+Node 24.19.0／Python 3.12.14／Linux。基準 `033d67b2` 前端 208 項通過；還原最後 tree 225 項通過、TypeScript／Vite build 通過。portable exporter 的四個否定／closure／digest 測試包含於 225 項。export action 已移入既有 toolbar。
+
+在獨立的 consumer 整合測試實際 import 本 repo `buildPortableBundle`，使用目標實際匯出的 host profile；封包交給 Atlas consumer validator／data registry／runtime，三種 panel 的數值、runtime 更新、取消／清理與 stored report 查詢通過，並驗證缺權限／capability 與 digest 竄改明確拒絕。本測試工具與 consumer 證據保留於 consumer repo，未將私人 source 複製到公開專案。這是 deterministic synthetic integration，沒有模型對話，也不是完整第二 host UI／Windows／一天交付驗收。
+
+Backend runtime 本次未改；server suite 53 項完成（52 通過、1 項 Windows 專用略過）。初次測試的 public-directory 負面案例被環境 restrictive umask 改成 0700，現以測試內 explicit chmod 0755 確立負面前置條件；沒有變更 storage policy 或放寬環境設定。真實 AEP endpoint／model 設定仍缺，沒有使用未授權 credentials，也沒有以 stub 代替真正 Session。

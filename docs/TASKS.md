@@ -101,3 +101,13 @@ Overall status: implemented but NOT done under the project's definition of done;
 
 P1 上述兩項 durable identity/Stop 保存待辦已由本階段的 opt-in host journal 與 provider 完成；
 legacy worker JSON 可能 null，消費端須使用 host acquisition JSON。
+
+
+## 2026-11-04 雲端接續 portable exporter
+
+- [x] 固定 `033d67b2` 基準，Library 第三階段 21 檔 manifest 還原；保留原始交接包，核對後正規化 LF。
+- [x] portable exporter action 放回現有 toolbar。
+- [x] 最後 tree 前端 225 項通過、TypeScript／Vite build 通過。
+- [x] 實際 exporter／Atlas consumer 合成互通：line／stat／table、transform closure、runtime／stored report 值、live 更新及清理、digest／capability／權限拒絕。
+- [ ] 真實 AEP Session、static／streaming processing 的完整語意移植、第二 host 瀏覽器 import／bind／視覺驗收、CI。
+- [ ] 僅 draft PR；兩條 E2E 與 CI 全過前不 merge；approval 需 Leo 針對當次 PR 明確確認。

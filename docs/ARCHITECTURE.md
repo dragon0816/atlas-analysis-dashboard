@@ -151,3 +151,8 @@ DashboardPage 使用 DurableAtlasSimulationProvider：fixed read-only acquisitio
 run_id/event_sequence 合併連續有效前綴，bounded gaps recovery/retries，保留 STALE/partial。
 VITE_ATLAS_PORT 只調數字 port（預設18765），host 仍127.0.0.1；production Python server 未新增 proxy。
 保留舊 scalar state 和 adapter 作相容測試；完整原始波形需 producer additive transport，現有 summary 不適用。
+
+
+## 2026-11-04 portable exporter 雲端驗證
+
+`Export for Atlas…` 位於既有 toolbar；一般 dashboard file Export 保持 schemaVersion 2 文件，portable exporter 另外輸出 bundleVersion 1 envelope。必須提供實際目標 renderer／capability profile、logical source 與 required fields；資料、URL、credentials、AEP SQL／Python 不隨包攜帶。實際 writer／Atlas consumer 已用三種 panel、runtime 更新與 stored report 合成案例核對；仍需完整第二 host import／bind／視覺與真實 AEP Session 驗收。

@@ -192,6 +192,8 @@ class StoreTests(unittest.TestCase):
         self.assertEqual((self.directory / "private.json").stat().st_mode & 0o777, 0o600)
         public = Path(self.temporary.name) / "public"
         public.mkdir(mode=0o755)
+        # A restrictive inherited umask must not erase this negative case.
+        public.chmod(0o755)
         self.assert_status(403, DashboardStore, public)
 
     def test_preconditions(self):
